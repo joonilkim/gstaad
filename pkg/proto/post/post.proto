@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "co.gstaad.post";
+option java_outer_classname = "PostProto";
+
+package post;
+
+import "google/api/annotations.proto";
+
+message PostRequest {
+  string name = 1;
+}
+
+message PostReply {
+  string message = 1;
+}
+
+service Post {
+  rpc Create (PostRequest) returns (PostReply) {
+    option (google.api.http) = {
+      post: "/v1/post"
+      body: "*"
+    };
+  }
+}
+
+

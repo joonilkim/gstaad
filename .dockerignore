@@ -1,0 +1,29 @@
+.git
+.gitignore
+.gitattributes
+.dockerignore
+
+**/build
+**/dist
+
+LICENSE
+VERSION
+**/*.md
+**/docker-compose.yml
+**/docs
+**/Dockerfile*
+**/*.local
+
+## node.js
+**/node_modules
+**/*.log
+
+## binaries
+**/*.zip
+shared
+
+## terraform
+init
+prod
+**/*.tf
+**/.terraform

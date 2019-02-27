@@ -1,0 +1,39 @@
+version: 2.1
+orbs:
+  aws-ecr: circleci/aws-ecr@3.0.0
+  aws-ecs: circleci/aws-ecs@0.0.6
+jobs:
+  hash-post:
+    docker:
+      - image: circleci/golang
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - post-{{ .Branch }}
+      - run:
+          name: check change
+          command: |
+            touch .post.hash
+            git log --pretty=format:'%H' -n 1 -- svc/post > .post.hash.new
+            ! diff .post.hash{,.new} > /dev/null
+      - save_cache:
+          key: post-{{ .Branch }}-{{ epoch }}
+          paths:
+            - .post.hash
+workflows:
+  deploy-post:
+    jobs:
+      - hash-post
+      - aws-ecr/build_and_push_image:
+          requires:
+            - hash-post
+          dockerfile: svc/post/Dockerfile
+          repo: gstaad-post
+          tag: "${CIRCLE_BRANCH}"
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build_and_push_image
+          family: gstaad-post
+          cluster-name: gstaad
+          container-image-name-updates: "container=gstaad-post,tag=${CIRCLE_BRANCH}"
