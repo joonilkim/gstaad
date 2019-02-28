@@ -18,6 +18,24 @@ variable "path_patterns" {
   default = ["/post/*"]
 }
 
+variable "vpc_id" {
+  description = "vpc_id"
+}
+
+variable "subnet_privs" {
+  description = "private subnet ids"
+  type = "list"
+}
+
+variable "subnet_pubs" {
+  description = "public subnet ids"
+  type = "list"
+}
+
+variable "secg_lb_id" {
+  description = "LB security group id"
+}
+
 variable "lb_arn" {
   description = "A LB arn"
 }
