@@ -2,88 +2,142 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"flag"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"path"
 	"strings"
+	"syscall"
+	"time"
 
 	pb "gstaad/pkg/proto/post"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 const (
-	port = ":9000"
+	port     = ":9000"
+	grpcPort = ":9001"
 )
 
-type server struct{}
+var (
+	swaggerDir = flag.String("swagger_dir", "template", "a path to dir contains swaggers")
+)
 
-func (s *server) Create(ctx context.Context, in *pb.PostRequest) (*pb.PostReply, error) {
-	return &pb.PostReply{Message: "Hello " + in.Name}, nil
+func init() {
+	if os.Getenv("APP_ENV") == "production" {
+		log.SetFormatter(&log.JSONFormatter{})
+	} else {
+		log.SetFormatter(&log.TextFormatter{})
+	}
 }
 
-func restServer(ctx context.Context) (s *http.ServeMux, er error) {
+func restServer(c context.Context, upstream string) *http.ServeMux {
 	op := []grpc.DialOption{grpc.WithInsecure()}
-	rest := runtime.NewServeMux()
-	er = pb.RegisterPostHandlerFromEndpoint(ctx, rest, port, op)
-	if er != nil {
+	gw := runtime.NewServeMux()
+	must(pb.RegisterPostHandlerFromEndpoint(c, gw, upstream, op))
+
+	sv := http.NewServeMux()
+	sv.HandleFunc("/ping", servePing)
+	sv.HandleFunc("/swagger", serveSwagger)
+	sv.Handle("/", gw)
+	return sv
+}
+
+func grpcServer() *grpc.Server {
+	sv := grpc.NewServer()
+	pb.RegisterPostServer(sv, &server{})
+	reflection.Register(sv)
+	return sv
+}
+
+func serveSwagger(w http.ResponseWriter, r *http.Request) {
+	if !strings.HasSuffix(r.URL.Path, ".swagger.json") {
+		http.NotFound(w, r)
 		return
 	}
 
-	s = http.NewServeMux()
-	s.Handle("/", rest)
-	s.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
-	})
-	return
+	p := strings.TrimPrefix(r.URL.Path, "/swagger/")
+	p = path.Join(*swaggerDir, p)
+	http.ServeFile(w, r, p)
 }
 
-func grpcServer(ctx context.Context) (s *grpc.Server, er error) {
-	s = grpc.NewServer()
-	pb.RegisterPostServer(s, &server{})
-
-	reflection.Register(s)
-	return
+func servePing(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("pong"))
 }
 
-func startServer(rest *http.ServeMux, gsrv *grpc.Server) (s *http.Server, er error) {
-	conn, er := net.Listen("tcp", port)
-	if er != nil {
-		return
+func startGrpc(addr string) *grpc.Server {
+	transport := "tcp"
+	if strings.HasPrefix(addr, "unix://") {
+		transport = "unix"
+		addr = addr[7:]
 	}
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			gsrv.ServeHTTP(w, r)
-		} else {
-			rest.ServeHTTP(w, r)
+	gconn, er := net.Listen(transport, addr)
+	must(er)
+	gsv := grpcServer()
+
+	go func() {
+		log.Infof("listening grpc %s", addr)
+		er := gsv.Serve(gconn)
+		if er != nil && er != http.ErrServerClosed {
+			log.Fatalf("Failed: %s\n", er)
 		}
-	})
+	}()
+	return gsv
+}
 
-	s = &http.Server{
-		Addr:    fmt.Sprintf("localhost%s", port),
-		Handler: handler,
+func startRest(c context.Context, addr string, upstream string) *http.Server {
+	conn, er := net.Listen("tcp", addr)
+	must(er)
+	mux := restServer(c, upstream)
+	sv := &http.Server{
+		Addr:    addr,
+		Handler: mux,
 	}
 
-	fmt.Printf("starting GRPC and REST on: %v\n", port)
-	er = s.Serve(conn)
-	return
+	go func() {
+		log.Infof("listening rest %s", addr)
+		er := sv.Serve(conn)
+		if er != nil && er != http.ErrServerClosed {
+			log.Fatalf("Failed: %s\n", er)
+		}
+	}()
+	return sv
 }
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	flag.Parse()
+
+	c, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	rest, er := restServer(ctx)
-	must(er)
-	gsrv, er := grpcServer(ctx)
-	must(er)
+	gsv := startGrpc(grpcPort)
+	sv := startRest(c, port, grpcPort)
 
-	_, er = startServer(rest, gsrv)
-	must(er)
+	stopGraceful(c, gsv, sv)
+}
+
+func stopGraceful(c context.Context, gsv *grpc.Server, sv *http.Server) {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+
+	log.Info("Shutting down...")
+
+	c, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+	sv.Shutdown(c)
+	gsv.GracefulStop()
+
+	select {
+	case <-c.Done():
+	}
 }
 
 func must(er error) {
