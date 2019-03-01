@@ -22,3 +22,7 @@ output "lb" {
 output "lb_tg_http_arn" {
   value = "${aws_alb_target_group.http.arn}"
 }
+
+output "lb_dns_name" {
+  value = "${aws_alb._.dns_name}"
+}
