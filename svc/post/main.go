@@ -40,7 +40,7 @@ func init() {
 func restServer(c context.Context, upstream string) *http.ServeMux {
 	op := []grpc.DialOption{grpc.WithInsecure()}
 	gw := runtime.NewServeMux()
-	must(pb.RegisterPostHandlerFromEndpoint(c, gw, upstream, op))
+	must(pb.RegisterPostServiceHandlerFromEndpoint(c, gw, upstream, op))
 
 	sv := http.NewServeMux()
 	sv.HandleFunc("/ping", servePing)
@@ -51,7 +51,7 @@ func restServer(c context.Context, upstream string) *http.ServeMux {
 
 func grpcServer() *grpc.Server {
 	sv := grpc.NewServer()
-	pb.RegisterPostServer(sv, &server{})
+	pb.RegisterPostServiceServer(sv, &server{})
 	reflection.Register(sv)
 	return sv
 }

@@ -7,6 +7,7 @@ import (
 	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	math "math"
@@ -23,106 +24,268 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type PostRequest struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+type MutationReply struct {
+	Result               bool     `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *PostRequest) Reset()         { *m = PostRequest{} }
-func (m *PostRequest) String() string { return proto.CompactTextString(m) }
-func (*PostRequest) ProtoMessage()    {}
-func (*PostRequest) Descriptor() ([]byte, []int) {
+func (m *MutationReply) Reset()         { *m = MutationReply{} }
+func (m *MutationReply) String() string { return proto.CompactTextString(m) }
+func (*MutationReply) ProtoMessage()    {}
+func (*MutationReply) Descriptor() ([]byte, []int) {
 	return fileDescriptor_e114ad14deab1dd1, []int{0}
 }
 
-func (m *PostRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PostRequest.Unmarshal(m, b)
+func (m *MutationReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MutationReply.Unmarshal(m, b)
 }
-func (m *PostRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PostRequest.Marshal(b, m, deterministic)
+func (m *MutationReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MutationReply.Marshal(b, m, deterministic)
 }
-func (m *PostRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PostRequest.Merge(m, src)
+func (m *MutationReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MutationReply.Merge(m, src)
 }
-func (m *PostRequest) XXX_Size() int {
-	return xxx_messageInfo_PostRequest.Size(m)
+func (m *MutationReply) XXX_Size() int {
+	return xxx_messageInfo_MutationReply.Size(m)
 }
-func (m *PostRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_PostRequest.DiscardUnknown(m)
+func (m *MutationReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_MutationReply.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_PostRequest proto.InternalMessageInfo
+var xxx_messageInfo_MutationReply proto.InternalMessageInfo
 
-func (m *PostRequest) GetName() string {
+func (m *MutationReply) GetResult() bool {
+	if m != nil {
+		return m.Result
+	}
+	return false
+}
+
+type User struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *User) Reset()         { *m = User{} }
+func (m *User) String() string { return proto.CompactTextString(m) }
+func (*User) ProtoMessage()    {}
+func (*User) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e114ad14deab1dd1, []int{1}
+}
+
+func (m *User) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_User.Unmarshal(m, b)
+}
+func (m *User) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_User.Marshal(b, m, deterministic)
+}
+func (m *User) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_User.Merge(m, src)
+}
+func (m *User) XXX_Size() int {
+	return xxx_messageInfo_User.Size(m)
+}
+func (m *User) XXX_DiscardUnknown() {
+	xxx_messageInfo_User.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_User proto.InternalMessageInfo
+
+func (m *User) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *User) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-type PostReply struct {
-	Message              string   `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+type Post struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Author               *User    `protobuf:"bytes,2,opt,name=author,proto3" json:"author,omitempty"`
+	Content              string   `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	CreatedAt            int64    `protobuf:"varint,15,opt,name=createdAt,proto3" json:"createdAt,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *PostReply) Reset()         { *m = PostReply{} }
-func (m *PostReply) String() string { return proto.CompactTextString(m) }
-func (*PostReply) ProtoMessage()    {}
-func (*PostReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_e114ad14deab1dd1, []int{1}
+func (m *Post) Reset()         { *m = Post{} }
+func (m *Post) String() string { return proto.CompactTextString(m) }
+func (*Post) ProtoMessage()    {}
+func (*Post) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e114ad14deab1dd1, []int{2}
 }
 
-func (m *PostReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PostReply.Unmarshal(m, b)
+func (m *Post) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Post.Unmarshal(m, b)
 }
-func (m *PostReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PostReply.Marshal(b, m, deterministic)
+func (m *Post) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Post.Marshal(b, m, deterministic)
 }
-func (m *PostReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PostReply.Merge(m, src)
+func (m *Post) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Post.Merge(m, src)
 }
-func (m *PostReply) XXX_Size() int {
-	return xxx_messageInfo_PostReply.Size(m)
+func (m *Post) XXX_Size() int {
+	return xxx_messageInfo_Post.Size(m)
 }
-func (m *PostReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_PostReply.DiscardUnknown(m)
+func (m *Post) XXX_DiscardUnknown() {
+	xxx_messageInfo_Post.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_PostReply proto.InternalMessageInfo
+var xxx_messageInfo_Post proto.InternalMessageInfo
 
-func (m *PostReply) GetMessage() string {
+func (m *Post) GetId() string {
 	if m != nil {
-		return m.Message
+		return m.Id
 	}
 	return ""
 }
 
+func (m *Post) GetAuthor() *User {
+	if m != nil {
+		return m.Author
+	}
+	return nil
+}
+
+func (m *Post) GetContent() string {
+	if m != nil {
+		return m.Content
+	}
+	return ""
+}
+
+func (m *Post) GetCreatedAt() int64 {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return 0
+}
+
+type CreateRequest struct {
+	Content              string   `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreateRequest) Reset()         { *m = CreateRequest{} }
+func (m *CreateRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateRequest) ProtoMessage()    {}
+func (*CreateRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e114ad14deab1dd1, []int{3}
+}
+
+func (m *CreateRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateRequest.Unmarshal(m, b)
+}
+func (m *CreateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateRequest.Marshal(b, m, deterministic)
+}
+func (m *CreateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateRequest.Merge(m, src)
+}
+func (m *CreateRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateRequest.Size(m)
+}
+func (m *CreateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateRequest proto.InternalMessageInfo
+
+func (m *CreateRequest) GetContent() string {
+	if m != nil {
+		return m.Content
+	}
+	return ""
+}
+
+type PostsReply struct {
+	Items                []*Post  `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *PostsReply) Reset()         { *m = PostsReply{} }
+func (m *PostsReply) String() string { return proto.CompactTextString(m) }
+func (*PostsReply) ProtoMessage()    {}
+func (*PostsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e114ad14deab1dd1, []int{4}
+}
+
+func (m *PostsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PostsReply.Unmarshal(m, b)
+}
+func (m *PostsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PostsReply.Marshal(b, m, deterministic)
+}
+func (m *PostsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PostsReply.Merge(m, src)
+}
+func (m *PostsReply) XXX_Size() int {
+	return xxx_messageInfo_PostsReply.Size(m)
+}
+func (m *PostsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_PostsReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PostsReply proto.InternalMessageInfo
+
+func (m *PostsReply) GetItems() []*Post {
+	if m != nil {
+		return m.Items
+	}
+	return nil
+}
+
 func init() {
-	proto.RegisterType((*PostRequest)(nil), "post.PostRequest")
-	proto.RegisterType((*PostReply)(nil), "post.PostReply")
+	proto.RegisterType((*MutationReply)(nil), "post.MutationReply")
+	proto.RegisterType((*User)(nil), "post.User")
+	proto.RegisterType((*Post)(nil), "post.Post")
+	proto.RegisterType((*CreateRequest)(nil), "post.CreateRequest")
+	proto.RegisterType((*PostsReply)(nil), "post.PostsReply")
 }
 
 func init() { proto.RegisterFile("post.proto", fileDescriptor_e114ad14deab1dd1) }
 
 var fileDescriptor_e114ad14deab1dd1 = []byte{
-	// 199 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2a, 0xc8, 0x2f, 0x2e,
-	0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x01, 0xb1, 0xa5, 0x64, 0xd2, 0xf3, 0xf3, 0xd3,
-	0x73, 0x52, 0xf5, 0x13, 0x0b, 0x32, 0xf5, 0x13, 0xf3, 0xf2, 0xf2, 0x4b, 0x12, 0x4b, 0x32, 0xf3,
-	0xf3, 0x8a, 0x21, 0x6a, 0x94, 0x14, 0xb9, 0xb8, 0x03, 0xf2, 0x8b, 0x4b, 0x82, 0x52, 0x0b, 0x4b,
-	0x53, 0x8b, 0x4b, 0x84, 0x84, 0xb8, 0x58, 0xf2, 0x12, 0x73, 0x53, 0x25, 0x18, 0x15, 0x18, 0x35,
-	0x38, 0x83, 0xc0, 0x6c, 0x25, 0x55, 0x2e, 0x4e, 0x88, 0x92, 0x82, 0x9c, 0x4a, 0x21, 0x09, 0x2e,
-	0xf6, 0xdc, 0xd4, 0xe2, 0xe2, 0xc4, 0x74, 0x98, 0x1a, 0x18, 0xd7, 0xc8, 0x93, 0x8b, 0x05, 0xa4,
-	0x4c, 0xc8, 0x91, 0x8b, 0xcd, 0xb9, 0x28, 0x35, 0xb1, 0x24, 0x55, 0x48, 0x50, 0x0f, 0xec, 0x18,
-	0x24, 0xf3, 0xa5, 0xf8, 0x91, 0x85, 0x0a, 0x72, 0x2a, 0x95, 0x84, 0x9b, 0x2e, 0x3f, 0x99, 0xcc,
-	0xc4, 0xab, 0xc4, 0xa1, 0x5f, 0x66, 0xa8, 0x0f, 0x92, 0xb3, 0x62, 0xd4, 0x72, 0x92, 0xe5, 0xe2,
-	0x4b, 0xce, 0xd7, 0x4b, 0x2f, 0x2e, 0x49, 0x4c, 0x4c, 0x01, 0x6b, 0x70, 0x02, 0xbb, 0x20, 0x00,
-	0xe4, 0xe2, 0x00, 0xc6, 0x24, 0x36, 0xb0, 0xd3, 0x8d, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x96,
-	0x8d, 0x28, 0x11, 0xec, 0x00, 0x00, 0x00,
+	// 357 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x51, 0xcd, 0x6a, 0xdb, 0x40,
+	0x10, 0x66, 0x25, 0x55, 0xad, 0xc6, 0xd8, 0x2d, 0xdb, 0x62, 0x84, 0xea, 0x82, 0xd8, 0x4b, 0x5d,
+	0x1f, 0x24, 0xea, 0xde, 0x7a, 0xb3, 0x83, 0x21, 0x97, 0x80, 0x51, 0xc8, 0x03, 0xac, 0xa5, 0x8d,
+	0x23, 0x90, 0xb5, 0x8a, 0x76, 0x64, 0xf0, 0x35, 0xaf, 0x90, 0x7b, 0x5e, 0x2a, 0xaf, 0x90, 0x07,
+	0x09, 0xbb, 0x2b, 0xe3, 0x98, 0x40, 0x6e, 0xfb, 0xfd, 0xcc, 0x37, 0x33, 0x3b, 0x00, 0x8d, 0x54,
+	0x98, 0x34, 0xad, 0x44, 0x49, 0x3d, 0xfd, 0x8e, 0x7e, 0x6e, 0xa5, 0xdc, 0x56, 0x22, 0x35, 0xdc,
+	0xa6, 0xbb, 0x4d, 0xc5, 0xae, 0xc1, 0x83, 0xb5, 0x44, 0x93, 0x5e, 0xe4, 0x4d, 0x99, 0xf2, 0xba,
+	0x96, 0xc8, 0xb1, 0x94, 0xb5, 0xb2, 0x2a, 0xfb, 0x0d, 0xc3, 0xab, 0xce, 0x52, 0x99, 0x68, 0xaa,
+	0x03, 0x1d, 0x83, 0xdf, 0x0a, 0xd5, 0x55, 0x18, 0x92, 0x98, 0x4c, 0xbf, 0x64, 0x3d, 0x62, 0x33,
+	0xf0, 0x6e, 0x94, 0x68, 0xe9, 0x08, 0x9c, 0xb2, 0x30, 0x5a, 0x90, 0x39, 0x65, 0x41, 0x29, 0x78,
+	0x35, 0xdf, 0x89, 0xd0, 0x31, 0x8c, 0x79, 0xb3, 0x16, 0xbc, 0xb5, 0x54, 0xf8, 0xce, 0xcb, 0xc0,
+	0xe7, 0x1d, 0xde, 0xc9, 0xd6, 0xb8, 0x07, 0x73, 0x48, 0xcc, 0x2a, 0x3a, 0x37, 0xeb, 0x15, 0x1a,
+	0xc2, 0xe7, 0x5c, 0xd6, 0x28, 0x6a, 0x0c, 0x5d, 0x53, 0x78, 0x84, 0x74, 0x02, 0x41, 0xde, 0x0a,
+	0x8e, 0xa2, 0x58, 0x60, 0xf8, 0x35, 0x26, 0x53, 0x37, 0x3b, 0x11, 0xec, 0x0f, 0x0c, 0x2f, 0x0c,
+	0xc8, 0xc4, 0x7d, 0x27, 0x14, 0xbe, 0x0d, 0x22, 0x67, 0x41, 0x2c, 0x01, 0xd0, 0xe3, 0x29, 0xbb,
+	0x70, 0x0c, 0x9f, 0x4a, 0x14, 0x3b, 0x15, 0x92, 0xd8, 0x3d, 0xcd, 0xa4, 0x0d, 0x99, 0x15, 0xe6,
+	0x4f, 0x04, 0x06, 0x1a, 0x5f, 0x8b, 0x76, 0x5f, 0xe6, 0x82, 0x5e, 0x82, 0x6f, 0x5b, 0xd1, 0xef,
+	0xd6, 0x7c, 0xd6, 0x38, 0xea, 0xc9, 0xb3, 0x6f, 0x65, 0x3f, 0x1e, 0x9e, 0x5f, 0x1e, 0x9d, 0x11,
+	0x0b, 0xd2, 0xfd, 0xdf, 0x54, 0xeb, 0xea, 0x3f, 0x99, 0xd1, 0x15, 0xb8, 0x8b, 0xaa, 0xa2, 0xe3,
+	0xc4, 0xde, 0x28, 0x39, 0x1e, 0x30, 0x59, 0xe9, 0x03, 0x46, 0xdf, 0x4e, 0xb3, 0xa8, 0x0f, 0x62,
+	0x96, 0xbf, 0x60, 0x94, 0xcb, 0x64, 0xab, 0x90, 0xf3, 0xc2, 0x94, 0x2c, 0x03, 0x5d, 0xb3, 0xd6,
+	0x69, 0x6b, 0xb2, 0xf1, 0x4d, 0xec, 0xbf, 0xd7, 0x00, 0x00, 0x00, 0xff, 0xff, 0x73, 0xc5, 0x50,
+	0xf8, 0x39, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -133,64 +296,97 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// PostClient is the client API for Post service.
+// PostServiceClient is the client API for PostService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type PostClient interface {
-	Create(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (*PostReply, error)
+type PostServiceClient interface {
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*MutationReply, error)
+	All(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PostsReply, error)
 }
 
-type postClient struct {
+type postServiceClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewPostClient(cc *grpc.ClientConn) PostClient {
-	return &postClient{cc}
+func NewPostServiceClient(cc *grpc.ClientConn) PostServiceClient {
+	return &postServiceClient{cc}
 }
 
-func (c *postClient) Create(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (*PostReply, error) {
-	out := new(PostReply)
-	err := c.cc.Invoke(ctx, "/post.Post/Create", in, out, opts...)
+func (c *postServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*MutationReply, error) {
+	out := new(MutationReply)
+	err := c.cc.Invoke(ctx, "/post.PostService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PostServer is the server API for Post service.
-type PostServer interface {
-	Create(context.Context, *PostRequest) (*PostReply, error)
+func (c *postServiceClient) All(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PostsReply, error) {
+	out := new(PostsReply)
+	err := c.cc.Invoke(ctx, "/post.PostService/All", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-func RegisterPostServer(s *grpc.Server, srv PostServer) {
-	s.RegisterService(&_Post_serviceDesc, srv)
+// PostServiceServer is the server API for PostService service.
+type PostServiceServer interface {
+	Create(context.Context, *CreateRequest) (*MutationReply, error)
+	All(context.Context, *empty.Empty) (*PostsReply, error)
 }
 
-func _Post_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PostRequest)
+func RegisterPostServiceServer(s *grpc.Server, srv PostServiceServer) {
+	s.RegisterService(&_PostService_serviceDesc, srv)
+}
+
+func _PostService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PostServer).Create(ctx, in)
+		return srv.(PostServiceServer).Create(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/post.Post/Create",
+		FullMethod: "/post.PostService/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PostServer).Create(ctx, req.(*PostRequest))
+		return srv.(PostServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Post_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "post.Post",
-	HandlerType: (*PostServer)(nil),
+func _PostService_All_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).All(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.PostService/All",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).All(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _PostService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "post.PostService",
+	HandlerType: (*PostServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Create",
-			Handler:    _Post_Create_Handler,
+			Handler:    _PostService_Create_Handler,
+		},
+		{
+			MethodName: "All",
+			Handler:    _PostService_All_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

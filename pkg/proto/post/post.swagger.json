@@ -15,14 +15,14 @@
     "application/json"
   ],
   "paths": {
-    "/v1/post": {
+    "/v1/posts": {
       "post": {
-        "operationId": "Create",
+        "operationId": "All",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/postPostReply"
+              "$ref": "#/definitions/postPostsReply"
             }
           }
         },
@@ -32,28 +32,69 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/postPostRequest"
+              "properties": {}
             }
           }
         ],
         "tags": [
-          "Post"
+          "PostService"
         ]
       }
     }
   },
   "definitions": {
-    "postPostReply": {
+    "postCreateRequest": {
       "type": "object",
       "properties": {
-        "message": {
+        "content": {
           "type": "string"
         }
       }
     },
-    "postPostRequest": {
+    "postMutationReply": {
       "type": "object",
       "properties": {
+        "result": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "postPost": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "author": {
+          "$ref": "#/definitions/postUser"
+        },
+        "content": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "postPostsReply": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/postPost"
+          }
+        }
+      }
+    },
+    "postUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
         "name": {
           "type": "string"
         }

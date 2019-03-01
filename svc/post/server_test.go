@@ -6,6 +6,7 @@ import (
 
 	pb "gstaad/pkg/proto/post"
 
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
@@ -20,13 +21,19 @@ func TestPost(t *testing.T) {
 	assert.NoError(t, er)
 	defer conn.Close()
 
-	post := pb.NewPostClient(conn)
+	post := pb.NewPostServiceClient(conn)
 
 	t.Run("create", func(t *testing.T) {
-		name := "testname"
-		r, er := post.Create(context.Background(), &pb.PostRequest{Name: name})
+		content := "testname"
+		r, er := post.Create(context.Background(), &pb.CreateRequest{Content: content})
 		assert.NoError(t, er)
-		assert.Equal(t, name, r.Message)
+		assert.Equal(t, true, r.Result)
+	})
+
+	t.Run("all", func(t *testing.T) {
+		r, er := post.All(context.Background(), &empty.Empty{})
+		assert.NoError(t, er)
+		assert.NotEmpty(t, r.Items)
 	})
 
 }

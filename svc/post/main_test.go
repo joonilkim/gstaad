@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,21 +29,20 @@ func TestRoute(t *testing.T) {
 	})
 
 	t.Run("grpc", func(t *testing.T) {
-		name := "테스트네임"
+		content := "테스트"
 		router := restServer(context.Background(), addr)
 
-		b, er := json.Marshal(map[string]interface{}{"name": name})
-		assert.NoError(t, er)
+		s := fmt.Sprintf(`{"content": "%s"}`, content)
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/v1/post", bytes.NewReader(b))
+		req, _ := http.NewRequest("POST", "/v1/posts", strings.NewReader(s))
 		router.ServeHTTP(w, req)
 		assert.Equal(t, 200, w.Code)
 
-		d := map[string]string{}
-		er = json.Unmarshal(w.Body.Bytes(), &d)
+		d := map[string]interface{}{}
+		er := json.Unmarshal(w.Body.Bytes(), &d)
 		assert.NoError(t, er)
-		assert.Equal(t, name, d["message"])
+		assert.Equal(t, true, d["result"])
 	})
 
 }
