@@ -7,7 +7,7 @@ import (
 	pb "gstaad/pkg/proto/post"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
-	"github.com/stretchr/testify/assert"
+	assert "github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )
 
@@ -36,4 +36,9 @@ func TestPost(t *testing.T) {
 		assert.NotEmpty(t, r.Items)
 	})
 
+	t.Run("count", func(t *testing.T) {
+		r, er := post.Count(context.Background(), &empty.Empty{})
+		assert.NoError(t, er)
+		assert.NotEmpty(t, r.Count)
+	})
 }

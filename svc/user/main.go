@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	pb "gstaad/pkg/proto/post"
+	pb "gstaad/pkg/proto/user"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
@@ -34,7 +33,7 @@ func init() {
 func restServer(c context.Context, upstream string) *http.ServeMux {
 	op := []grpc.DialOption{grpc.WithInsecure()}
 	gw := runtime.NewServeMux()
-	must(pb.RegisterPostServiceHandlerFromEndpoint(c, gw, upstream, op))
+	must(pb.RegisterUserServiceHandlerFromEndpoint(c, gw, upstream, op))
 
 	sv := http.NewServeMux()
 	sv.HandleFunc("/ping", servePing)
@@ -42,11 +41,13 @@ func restServer(c context.Context, upstream string) *http.ServeMux {
 	return sv
 }
 
-func grpcServer() *grpc.Server {
-	sv := grpc.NewServer()
-	pb.RegisterPostServiceServer(sv, &server{})
+func grpcServer(cc *connectors) (sv *grpc.Server) {
+	sv = grpc.NewServer()
+
+	s := &server{cc}
+	pb.RegisterUserServiceServer(sv, s)
 	reflection.Register(sv)
-	return sv
+	return
 }
 
 func servePing(w http.ResponseWriter, r *http.Request) {
@@ -54,24 +55,21 @@ func servePing(w http.ResponseWriter, r *http.Request) {
 }
 
 func startGrpc(addr string) *grpc.Server {
-	transport := "tcp"
-	if strings.HasPrefix(addr, "unix://") {
-		transport = "unix"
-		addr = addr[7:]
-	}
-
-	gconn, er := net.Listen(transport, addr)
+	cc, er := NewConnectors()
 	must(er)
-	gsv := grpcServer()
+
+	gconn, er := net.Listen("tcp", addr)
+	must(er)
+	gs := grpcServer(cc)
 
 	go func() {
 		log.Infof("listening grpc %s", addr)
-		er := gsv.Serve(gconn)
+		er := gs.Serve(gconn)
 		if er != nil && er != http.ErrServerClosed {
 			log.Fatalf("Failed: %s\n", er)
 		}
 	}()
-	return gsv
+	return gs
 }
 
 func startRest(c context.Context, addr string, upstream string) *http.Server {
@@ -99,13 +97,13 @@ func main() {
 	c, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	gsv := startGrpc(grpcPort)
+	gs := startGrpc(grpcPort)
 	sv := startRest(c, port, grpcPort)
 
-	stopGraceful(c, gsv, sv)
+	stopGraceful(c, gs, sv)
 }
 
-func stopGraceful(c context.Context, gsv *grpc.Server, sv *http.Server) {
+func stopGraceful(c context.Context, gs *grpc.Server, sv *http.Server) {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	<-ch
@@ -113,7 +111,7 @@ func stopGraceful(c context.Context, gsv *grpc.Server, sv *http.Server) {
 	log.Info("Stopping operation...")
 
 	sv.Shutdown(c)
-	gsv.GracefulStop()
+	gs.GracefulStop()
 }
 
 func must(er error) {

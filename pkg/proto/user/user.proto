@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "co.gstaad.user";
+option java_outer_classname = "UserProto";
+
+package user;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+
+message MutationReply {
+  bool result = 1;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  int64 createdAt = 15;
+}
+
+message Token {
+  string accessToken = 1;
+  google.protobuf.Timestamp expiresIn = 15;
+}
+
+message LoginRequest {
+  string name = 1;
+}
+
+message LoginReply {
+  Token token = 1;
+}
+
+message ProfileReply {
+  User user = 1;
+  int32 postCount = 2;
+}
+
+service UserService {
+  rpc Login (LoginRequest) returns (LoginReply) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"
+    };
+  }
+
+  rpc Profile (google.protobuf.Empty) returns (ProfileReply) {
+    option (google.api.http).get = "/v1/users";
+  }
+}

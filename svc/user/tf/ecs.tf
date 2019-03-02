@@ -26,6 +26,7 @@ resource "aws_ecs_service" "_" {
   }
 
   lifecycle {
+    # ecs update makes a new task definition
     ignore_changes = ["task_definition"]
   }
 }

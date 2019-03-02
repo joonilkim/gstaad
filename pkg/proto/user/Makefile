@@ -1,6 +1,6 @@
 root := ../../..
-service := post
-mockClient := PostServiceClient
+service := user
+mockClient := UserServiceClient
 
 include ../Makefile
 

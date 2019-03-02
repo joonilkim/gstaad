@@ -14,13 +14,31 @@ jobs:
       - run:
           name: check change
           command: |
-            touch .post.hash
-            git log --pretty=format:'%H' -n 1 -- svc/post > .post.hash.new
-            ! diff .post.hash{,.new} > /dev/null
+            touch .hash.post
+            git log --pretty=format:'%H' -n 1 -- svc/post > .hash.post.new
+            ! diff .hash.post{,.new} > /dev/null
       - save_cache:
           key: post-{{ .Branch }}-{{ epoch }}
           paths:
-            - .post.hash
+            - .hash.post
+  hash-user:
+    docker:
+      - image: circleci/golang
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - user-{{ .Branch }}
+      - run:
+          name: check change
+          command: |
+            touch .hash.user
+            git log --pretty=format:'%H' -n 1 -- svc/user > .hash.user.new
+            ! diff .hash.user{,.new} > /dev/null
+      - save_cache:
+          key: user-{{ .Branch }}-{{ epoch }}
+          paths:
+            - .hash.user
 workflows:
   deploy-post:
     jobs:
@@ -29,11 +47,26 @@ workflows:
           requires:
             - hash-post
           dockerfile: svc/post/Dockerfile
-          repo: gstaad-post
+          repo: gstaad/post
           tag: "${CIRCLE_BRANCH}"
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build_and_push_image
           family: gstaad-post
           cluster-name: gstaad
-          container-image-name-updates: "container=gstaad-post,tag=${CIRCLE_BRANCH}"
+          container-image-name-updates: "container=gstaad/post,tag=${CIRCLE_BRANCH}"
+  deploy-user:
+    jobs:
+      - hash-user
+      - aws-ecr/build_and_push_image:
+          requires:
+            - hash-user
+          dockerfile: svc/user/Dockerfile
+          repo: gstaad-user
+          tag: "${CIRCLE_BRANCH}"
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build_and_push_image
+          family: gstaad-user
+          cluster-name: gstaad
+          container-image-name-updates: "container=gstaad-user,image-and-tag=app:${CIRCLE_BRANCH}"

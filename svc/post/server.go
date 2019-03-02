@@ -25,16 +25,22 @@ func (s *server) All(c context.Context, in *empty.Empty) (*pb.PostsReply, error)
 			Id:        "post1",
 			Author:    &author,
 			Content:   "post1",
-			CreatedAt: time.Now().UnixNano(),
+			CreatedAt: time.Now().UnixNano() / 1000,
 		},
 		&pb.Post{
 			Id:        "post2",
 			Author:    &author,
 			Content:   "post2",
-			CreatedAt: time.Now().UnixNano(),
+			CreatedAt: time.Now().UnixNano() / 1000,
 		},
 	}
 	return &pb.PostsReply{
 		Items: posts,
+	}, nil
+}
+
+func (s *server) Count(c context.Context, in *empty.Empty) (*pb.CountReply, error) {
+	return &pb.CountReply{
+		Count: 10,
 	}, nil
 }

@@ -34,6 +34,10 @@ message PostsReply {
   repeated Post items = 1;
 }
 
+message CountReply {
+  int32 count = 1;
+}
+
 service PostService {
   rpc Create (CreateRequest) returns (MutationReply) {
     option (google.api.http) = {
@@ -43,9 +47,10 @@ service PostService {
   }
 
   rpc All (google.protobuf.Empty) returns (PostsReply) {
-    option (google.api.http) = {
-      post: "/v1/posts"
-      body: "*"
-    };
+    option (google.api.http).get = "/v1/posts";
+  }
+
+  rpc Count (google.protobuf.Empty) returns (CountReply) {
+    option (google.api.http).get = "/v1/posts/count";
   }
 }

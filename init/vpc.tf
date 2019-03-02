@@ -23,12 +23,7 @@ resource "aws_route_table" "_" {
   vpc_id = "${aws_vpc._.id}"
 }
 
-resource "aws_route_table_association" "a" {
-  route_table_id = "${aws_route_table._.id}"
-  subnet_id      = "${aws_subnet.pub_a.id}"
+output "vpc_id" {
+  value = "${aws_vpc._.id}"
 }
 
-resource "aws_route_table_association" "c" {
-  route_table_id = "${aws_route_table._.id}"
-  subnet_id      = "${aws_subnet.pub_c.id}"
-}

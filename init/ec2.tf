@@ -1,13 +1,16 @@
 resource "aws_autoscaling_group" "_" {
-  name                 = "${var.ns}-${var.service}"
-  desired_capacity     = 1
+  name                 = "${var.ns}"
+  desired_capacity     = 2
   health_check_type    = "EC2"
   launch_configuration = "${aws_launch_configuration._.name}"
-  max_size             = 2
-  min_size             = 1
+  max_size             = 4
+  min_size             = 2
   force_delete         = true
 
-  vpc_zone_identifier  = ["${var.subnet_pubs}"]
+  vpc_zone_identifier  = [
+    "${aws_subnet.pub_a.id}",
+    "${aws_subnet.pub_c.id}",
+  ]
 
   lifecycle {
     create_before_destroy = true
@@ -15,13 +18,13 @@ resource "aws_autoscaling_group" "_" {
 }
 
 resource "aws_launch_configuration" "_" {
-  name_prefix                 = "${var.ns}-${var.service}-"
+  name_prefix                 = "${var.ns}-"
   associate_public_ip_address = true
   iam_instance_profile        = "${aws_iam_instance_profile._.id}"
   image_id                    = "${data.aws_ami.ecs_optimized.id}"
-  instance_type               = "t3.micro"
-  security_groups             = ["${aws_security_group.ec2.id}"]
-  user_data                   = "#!/bin/bash\necho ECS_CLUSTER='${aws_ecs_cluster._.name}' >> /etc/ecs/ecs.config"
+  instance_type               = "t2.micro"
+  security_groups             = ["${aws_security_group.svc.id}"]
+  user_data                   = "#!/bin/bash\necho ECS_CLUSTER=${aws_ecs_cluster._.name} >> /etc/ecs/ecs.config"
 
   root_block_device {
     volume_type           = "gp2"
@@ -53,6 +56,6 @@ data "aws_ami" "ecs_optimized" {
 }
 
 resource "aws_iam_instance_profile" "_" {
-  name  = "${var.ns}-${var.service}"
+  name  = "${var.ns}"
   role  = "${aws_iam_role.ec2.name}"
 }

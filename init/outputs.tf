@@ -1,28 +1,20 @@
-
-output "vpc_id" {
-  value = "${aws_vpc._.id}"
-}
-
-output "subnet_privs" {
-  value = ["${aws_subnet.priv_a.id}", "${aws_subnet.priv_c.id}"]
-}
-
-output "subnet_pubs" {
-  value = ["${aws_subnet.pub_a.id}", "${aws_subnet.pub_c.id}"]
-}
-
-output "secg_lb_id" {
-  value = "${aws_security_group.lb.id}"
-}
-
-output "lb" {
-  value = "${aws_alb._.arn}"
-}
-
-output "lb_tg_http_arn" {
-  value = "${aws_alb_target_group.http.arn}"
-}
-
-output "lb_dns_name" {
-  value = "${aws_alb._.dns_name}"
+output "all" {
+  value = [
+    "${aws_ecs_cluster._.name}",
+    "${aws_alb._.arn}",
+    "${aws_alb_target_group._.arn}",
+    "${aws_alb._.dns_name}",
+    "${aws_iam_role.ec2.arn}",
+    "${aws_iam_role.ecs.arn}",
+    "${aws_iam_role.task.arn}",
+    "${aws_security_group.lb.id}",
+    "${aws_security_group.svc.id}",
+    "${aws_security_group.db.id}",
+    "${aws_service_discovery_service._.arn}",
+    "${aws_subnet.pub_a.id}",
+    "${aws_subnet.pub_c.id}",
+    "${aws_subnet.priv_a.id}",
+    "${aws_subnet.priv_c.id}",
+    "${aws_vpc._.id}",
+  ]
 }

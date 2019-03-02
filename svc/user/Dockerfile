@@ -10,7 +10,7 @@ WORKDIR /go/src/gstaad
 RUN go mod download
 
 COPY . /go/src/gstaad/
-WORKDIR /go/src/gstaad/svc/post
+WORKDIR /go/src/gstaad/svc/user
 RUN go build -o /go/bin/gstaad .
 
 WORKDIR /go/bin
@@ -19,3 +19,4 @@ EXPOSE 9000
 EXPOSE 9001
 
 ENTRYPOINT ["/go/bin/gstaad"]
+

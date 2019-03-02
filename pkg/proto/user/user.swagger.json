@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "post.proto",
+    "title": "user.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -15,28 +15,28 @@
     "application/json"
   ],
   "paths": {
-    "/v1/posts": {
+    "/v1/users": {
       "get": {
-        "operationId": "All",
+        "operationId": "Profile",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/postPostsReply"
+              "$ref": "#/definitions/userProfileReply"
             }
           }
         },
         "tags": [
-          "PostService"
+          "UserService"
         ]
       },
       "post": {
-        "operationId": "Create",
+        "operationId": "Login",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/postMutationReply"
+              "$ref": "#/definitions/userLoginReply"
             }
           }
         },
@@ -46,89 +46,58 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/postCreateRequest"
+              "$ref": "#/definitions/userLoginRequest"
             }
           }
         ],
         "tags": [
-          "PostService"
-        ]
-      }
-    },
-    "/v1/posts/count": {
-      "get": {
-        "operationId": "Count",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/postCountReply"
-            }
-          }
-        },
-        "tags": [
-          "PostService"
+          "UserService"
         ]
       }
     }
   },
   "definitions": {
-    "postCountReply": {
+    "userLoginReply": {
       "type": "object",
       "properties": {
-        "count": {
+        "token": {
+          "$ref": "#/definitions/userToken"
+        }
+      }
+    },
+    "userLoginRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "userProfileReply": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/userUser"
+        },
+        "postCount": {
           "type": "integer",
           "format": "int32"
         }
       }
     },
-    "postCreateRequest": {
+    "userToken": {
       "type": "object",
       "properties": {
-        "content": {
-          "type": "string"
-        }
-      }
-    },
-    "postMutationReply": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
-    "postPost": {
-      "type": "object",
-      "properties": {
-        "id": {
+        "accessToken": {
           "type": "string"
         },
-        "author": {
-          "$ref": "#/definitions/postUser"
-        },
-        "content": {
-          "type": "string"
-        },
-        "createdAt": {
+        "expiresIn": {
           "type": "string",
-          "format": "int64"
+          "format": "date-time"
         }
       }
     },
-    "postPostsReply": {
-      "type": "object",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/postPost"
-          }
-        }
-      }
-    },
-    "postUser": {
+    "userUser": {
       "type": "object",
       "properties": {
         "id": {
@@ -136,6 +105,10 @@
         },
         "name": {
           "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
         }
       }
     }
