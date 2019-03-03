@@ -1,9 +1,9 @@
 resource "aws_alb" "_" {
-  name    = "${var.ns}"
+  name            = "${var.ns}"
 
   subnets = [
-    "${aws_subnet.priv_a.id}",
-    "${aws_subnet.priv_c.id}",
+    "${aws_subnet.pub_d.id}",
+    "${aws_subnet.pub_c.id}",
   ]
 
   security_groups = [
@@ -17,35 +17,84 @@ resource "aws_alb_listener" "_80" {
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${aws_alb_target_group._.id}"
+    target_group_arn = "${aws_alb_target_group.user.id}"
     type             = "forward"
   }
 }
 
-resource "aws_alb_target_group" "_" {
-  name                  = "${var.ns}-http"
+resource "aws_alb_target_group" "user" {
+  name                  = "${var.ns}-user"
   port                  = 9000
   protocol              = "HTTP"
   vpc_id                = "${aws_vpc._.id}"
   target_type           = "ip"
   deregistration_delay  = 10
+  slow_start            = 30
 
   health_check {
     healthy_threshold   = 2
     interval            = 10
-    matcher             = "200,301"
+    matcher             = 200
     path                = "/ping"
     timeout             = 3
     unhealthy_threshold = 3
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
+
+
+resource "aws_lb_listener_rule" "post" {
+  listener_arn = "${aws_alb_listener._80.arn}"
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = "${aws_alb_target_group.post.arn}"
+  }
+
+  condition {
+    field  = "path-pattern"
+    values = ["/v1/posts*"]
+  }
+}
+
+resource "aws_alb_target_group" "post" {
+  name                  = "${var.ns}-post"
+  port                  = 9000
+  protocol              = "HTTP"
+  vpc_id                = "${aws_vpc._.id}"
+  target_type           = "ip"
+  deregistration_delay  = 10
+  slow_start            = 30
+
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    matcher             = 200
+    path                = "/ping"
+    timeout             = 3
+    unhealthy_threshold = 3
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 
 output "lb_arn" {
   value = "${aws_alb._.arn}"
 }
 
-output "lb_tg_arn" {
-  value = "${aws_alb_target_group._.arn}"
+output "user_tg_arn" {
+  value = "${aws_alb_target_group.user.arn}"
+}
+
+output "post_tg_arn" {
+  value = "${aws_alb_target_group.post.arn}"
 }
 
 output "lb_dns_name" {

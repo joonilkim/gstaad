@@ -16,8 +16,6 @@ variable "secg_lb" {}
 variable "secg_svc" {}
 variable "secg_db" {}
 
-
-variable "lb_arn" {}
 variable "lb_tg_arn" {}
 
 variable "ecs_service_role" {}

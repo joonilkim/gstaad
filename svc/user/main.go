@@ -11,10 +11,17 @@ import (
 
 	pb "gstaad/pkg/proto/user"
 
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+)
+
+const (
+	Version = "0.0.0+1"
 )
 
 var (
@@ -75,10 +82,11 @@ func startGrpc(addr string) *grpc.Server {
 func startRest(c context.Context, addr string, upstream string) *http.Server {
 	conn, er := net.Listen("tcp", addr)
 	must(er)
-	mux := restServer(c, upstream)
+
+	h := restServer(c, upstream)
 	sv := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: h2c.NewHandler(h, &http2.Server{}),
 	}
 
 	go func() {

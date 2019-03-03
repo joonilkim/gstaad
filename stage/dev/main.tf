@@ -10,6 +10,14 @@ variable "region" {
   default = "ap-northeast-1"
 }
 
+variable "bastion_key" {
+  default = ""
+}
+
+variable "bastion_on" {
+  default = false
+}
+
 locals {
   stage = "dev"
 }
@@ -21,6 +29,9 @@ module "init" {
   stage           = "${local.stage}"
   domain          = "${var.domain}"
   ns              = "${var.ns}"
+
+  bastion_on     = "${var.bastion_on}"
+  bastion_key     = "${var.bastion_key}"
 }
 
 module "post" {
@@ -40,8 +51,7 @@ module "post" {
   secg_svc        = "${module.init.secg_svc}"
   secg_db         = "${module.init.secg_db}"
 
-  lb_arn          = "${module.init.lb_arn}"
-  lb_tg_arn       = "${module.init.lb_tg_arn}"
+  lb_tg_arn       = "${module.init.post_tg_arn}"
 
   ecs_service_role  = "${module.init.ecs_service_role}"
   ecs_task_role     = "${module.init.ecs_task_role}"
@@ -68,8 +78,7 @@ module "user" {
   secg_svc        = "${module.init.secg_svc}"
   secg_db         = "${module.init.secg_db}"
 
-  lb_arn          = "${module.init.lb_arn}"
-  lb_tg_arn       = "${module.init.lb_tg_arn}"
+  lb_tg_arn       = "${module.init.user_tg_arn}"
 
   ecs_service_role  = "${module.init.ecs_service_role}"
   ecs_task_role     = "${module.init.ecs_task_role}"
