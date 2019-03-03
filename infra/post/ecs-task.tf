@@ -10,7 +10,7 @@ resource "aws_ecs_task_definition" "_" {
   [
     {
       "name": "${var.service}",
-      "image": "${local.ecr_uri}/app:${var.image_tag}",
+      "image": "${local.ecr_uri}:${var.image_tag}",
       "memory": 900,
       "portMappings": [
         {

@@ -2,107 +2,60 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
   aws-ecs: circleci/aws-ecs@0.0.6
+executors:
+  default:
+    machine:
+      enabled: true
+      docker_layer_caching: true
+  golang:
+    docker:
+      - image: circleci/golang
 jobs:
-  hash-post:
-    machine:
-      enabled: true
-      docker_layer_caching: true
+  build_and_deploy:
+    executor: <<parameters.executor>>
+    environment:
+      stage: develop
+    parameters:
+      executor:
+        type: executor
+        default: default
+      svc_name:
+        type: string
+      svc_path:
+        type: string
     steps:
       - checkout
       - restore_cache:
           keys:
-            - post-{{ .Branch }}
-      - run:
-          name: check change
-          command: |
-            mkdir -p .meta
-            touch .meta/post.hash
-            git log --pretty=format:'%H' -n 1 -- svc/post > .meta/post.hash.new
-            ! diff .meta/post.hash{,.new} > /dev/null
-      - persist_to_workspace:
-          root: .
-          paths: .meta
-  save-post-hash:
-    machine:
-      enabled: true
-      docker_layer_caching: true
-    steps:
-      - checkout
+            - gstaad-{{ .Branch }}
       - run:
           command: |
             mkdir -p .meta
-            git log --pretty=format:'%H' -n 1 -- svc/post > .meta/post.hash
+            touch .meta/<<parameters.svc_name>>.hash
+            git log --pretty=format:'%H' -n 1 -- <<parameters.svc_path>> > .meta/<<parameters.svc_name>>.hash.new
+            ! diff .meta/<<parameters.svc_name>>.hash{,.new} > /dev/null
+      - setup_remote_docker
+      - aws-ecr/build-and-push-image:
+          dockerfile: <<parameters.svc_path>>/Dockerfile
+          repo: gstaad/<<parameters.svc_name>>
+          tag: ${CIRCLE_BRANCH}
+      - aws-ecs/update-service:
+          family: gstaad-<<parameters.svc_name>>
+          cluster-name: gstaad
       - save_cache:
-          key: post-{{ .Branch }}-{{ epoch }}
+          key: gstaad-{{ .Branch }}-{{ epoch }}
           paths:
-            - .meta/post.hash
-  hash-user:
-    machine:
-      enabled: true
-      docker_layer_caching: true
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - user-{{ .Branch }}
-      - run:
-          name: check change
-          command: |
-            mkdir -p .meta
-            touch .meta/user.hash
-            git log --pretty=format:'%H' -n 1 -- svc/user > .meta/user.hash.new
-            ! diff .meta/user.hash{,.new} > /dev/null
-      - persist_to_workspace:
-          root: .
-          paths: .meta
-  save-user-hash:
-    machine:
-      enabled: true
-      docker_layer_caching: true
-    steps:
-      - checkout
-      - run:
-          command: |
-            mkdir -p .meta
-            git log --pretty=format:'%H' -n 1 -- svc/user > .meta/user.hash
-      - save_cache:
-          key: user-{{ .Branch }}-{{ epoch }}
-          paths:
-            - .meta/user.hash
+            - .meta
 workflows:
-  deploy-post:
+  build_post:
     jobs:
-      - hash-post
-      - aws-ecr/build_and_push_image:
-          requires:
-            - hash-post
-          dockerfile: svc/post/Dockerfile
-          repo: gstaad-post
-          tag: "${CIRCLE_BRANCH}"
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build_and_push_image
-          family: gstaad-post
-          cluster-name: gstaad
-          container-image-name-updates: "container=gstaad-post,image-and-tag=app:${CIRCLE_BRANCH}"
-      - save-post-hash:
-          requires:
-            - aws-ecs/deploy-service-update
-  deploy-user:
+      - build_and_deploy:
+          executor: golang
+          svc_name: post
+          svc_path: svc/post
+  build_user:
     jobs:
-      - hash-user
-      - aws-ecr/build_and_push_image:
-          requires:
-            - hash-user
-          dockerfile: svc/user/Dockerfile
-          repo: gstaad-user
-          tag: "${CIRCLE_BRANCH}"
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build_and_push_image
-          family: gstaad-user
-          cluster-name: gstaad
-          container-image-name-updates: "container=gstaad-user,image-and-tag=app:${CIRCLE_BRANCH}"
-      - save-user-hash:
-          requires:
-            - aws-ecs/deploy-service-update
+      - build_and_deploy:
+          executor: golang
+          svc_name: user
+          svc_path: svc/user
