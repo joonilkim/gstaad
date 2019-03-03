@@ -15,7 +15,7 @@ locals {
 }
 
 module "init" {
-  source          = "../../init"
+  source          = "../../infra/init"
 
   region          = "${var.region}"
   stage           = "${local.stage}"
@@ -24,7 +24,7 @@ module "init" {
 }
 
 module "post" {
-  source          = "../../svc/post/tf"
+  source          = "../../infra/post"
 
   region          = "${var.region}"
   stage           = "${local.stage}"
@@ -52,7 +52,7 @@ module "post" {
 }
 
 module "user" {
-  source          = "../../svc/user/tf"
+  source          = "../../infra/user"
 
   region          = "${var.region}"
   stage           = "${local.stage}"
