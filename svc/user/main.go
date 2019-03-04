@@ -3,19 +3,24 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"io"
+	_log "log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	mw "gstaad/pkg/middleware"
 	pb "gstaad/pkg/proto/user"
 
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -27,17 +32,23 @@ const (
 var (
 	port     = ":" + getenv("PORT", "9000")
 	grpcPort = ":" + getenv("GRPC_PORT", "9001")
+
+	log  *logrus.Logger
+	logw io.WriteCloser
 )
 
 func init() {
 	if os.Getenv("APP_ENV") == "production" {
-		log.SetFormatter(&log.JSONFormatter{})
+		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
-		log.SetFormatter(&log.TextFormatter{})
+		logrus.SetFormatter(&logrus.TextFormatter{})
 	}
+
+	log = logrus.New()
+	logw = log.Writer()
 }
 
-func restServer(c context.Context, upstream string) *http.ServeMux {
+func restServer(c context.Context, upstream string) http.Handler {
 	op := []grpc.DialOption{grpc.WithInsecure()}
 	gw := runtime.NewServeMux()
 	must(pb.RegisterUserServiceHandlerFromEndpoint(c, gw, upstream, op))
@@ -80,10 +91,23 @@ func startGrpc(addr string) *grpc.Server {
 }
 
 func startRest(c context.Context, addr string, upstream string) *http.Server {
+	l := _log.New(logw, "", 0)
+
+	nextID := func() string {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+
 	h := restServer(c, upstream)
+	h = mw.Tracing(nextID)(mw.Logging(l)(h))
+	h = h2c.NewHandler(h, &http2.Server{})
 	sv := &http.Server{
-		Addr:    addr,
-		Handler: h2c.NewHandler(h, &http2.Server{}),
+		Addr:           addr,
+		Handler:        h,
+		ErrorLog:       l,
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		IdleTimeout:    30 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
 
 	go func() {
@@ -98,6 +122,8 @@ func startRest(c context.Context, addr string, upstream string) *http.Server {
 
 func main() {
 	flag.Parse()
+
+	defer logw.Close()
 
 	c, cancel := context.WithCancel(context.Background())
 	defer cancel()

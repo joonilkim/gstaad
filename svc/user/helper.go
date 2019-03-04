@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	_log "log"
 	"net"
 	"net/http"
 	"os"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -25,15 +25,15 @@ func startMockGrpcServer(cc *connectors) *grpc.Server {
 	gs := grpcServer(cc)
 
 	go func() {
-		log.Infof("listening grpc %s", addr)
+		_log.Printf("listening grpc %s", addr)
 		er := gs.Serve(gconn)
 		if er != nil && er != http.ErrServerClosed {
-			log.Fatalf("Failed: %s\n", er)
+			_log.Printf("Failed: %s\n", er)
 		}
 	}()
 	return gs
 }
 
-func mockRouter() *http.ServeMux {
+func mockRouter() http.Handler {
 	return restServer(context.Background(), addr)
 }
