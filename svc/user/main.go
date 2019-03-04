@@ -80,9 +80,6 @@ func startGrpc(addr string) *grpc.Server {
 }
 
 func startRest(c context.Context, addr string, upstream string) *http.Server {
-	conn, er := net.Listen("tcp", addr)
-	must(er)
-
 	h := restServer(c, upstream)
 	sv := &http.Server{
 		Addr:    addr,
@@ -91,7 +88,7 @@ func startRest(c context.Context, addr string, upstream string) *http.Server {
 
 	go func() {
 		log.Infof("listening rest %s", addr)
-		er := sv.Serve(conn)
+		er := sv.ListenAndServe()
 		if er != nil && er != http.ErrServerClosed {
 			log.Fatalf("Failed: %s\n", er)
 		}
