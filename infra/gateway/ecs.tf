@@ -8,17 +8,21 @@ resource "aws_ecs_service" "_" {
   desired_count                      = 1
   name                               = "${var.service}"
   task_definition                    = "${aws_ecs_task_definition._.arn}"
+  health_check_grace_period_seconds  = 20
 
-  network_configuration {
-    subnets         = ["${var.priv_subnets}"]
-    security_groups = ["${var.secg_svc}"]
+  load_balancer {
+    container_name   = "${var.ns}-${var.service}"
+    container_port   = "8080"
+    target_group_arn = "${var.lb_tg_arn}"
   }
 
-  service_registries {
-    registry_arn     = "${aws_service_discovery_service._.arn}"
+  network_configuration {
+    subnets = ["${var.priv_subnets}"]
+    security_groups = ["${var.secg}"]
   }
 
   lifecycle {
+    # ecs update makes a new task definition
     ignore_changes = ["task_definition"]
   }
 }

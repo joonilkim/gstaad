@@ -17,12 +17,10 @@ variable "secg_lb" {}
 variable "secg_svc" {}
 variable "secg_db" {}
 
-variable "lb_tg_arn" {}
-
 variable "ecs_service_role" {}
 variable "ecs_task_role" {}
 variable "ecs_instance_role" {}
 
 variable "ecs_cluster" {}
-variable "service_discovery_arn" {}
+variable "service_discovery_ns" {}
 variable "image_tag" {}

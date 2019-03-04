@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const userServiceEndpoint = "user.gstaad:9000"
+const userServiceEndpoint = "user.gstaad.io:9000"
 
 type userService struct{}
 

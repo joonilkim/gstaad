@@ -14,7 +14,7 @@ resource "aws_ecs_task_definition" "_" {
       "memory": 900,
       "portMappings": [
         {
-          "containerPort": 9000
+          "containerPort": 8080
         }
       ],
       "environment": [

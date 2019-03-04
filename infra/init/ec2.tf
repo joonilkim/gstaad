@@ -1,10 +1,10 @@
 resource "aws_autoscaling_group" "_" {
   name                 = "${var.ns}"
-  desired_capacity     = 2
+  desired_capacity     = 3
   health_check_type    = "EC2"
   launch_configuration = "${aws_launch_configuration._.name}"
-  max_size             = 4
-  min_size             = 2
+  max_size             = 6
+  min_size             = 3
   force_delete         = true
 
   vpc_zone_identifier  = [
@@ -23,7 +23,7 @@ resource "aws_launch_configuration" "_" {
   iam_instance_profile        = "${aws_iam_instance_profile._.id}"
   image_id                    = "${data.aws_ami.ecs_optimized.id}"
   instance_type               = "t2.micro"
-  security_groups             = ["${aws_security_group.svc.id}"]
+  security_groups             = ["${aws_security_group.ecs.id}"]
   user_data                   = "#!/bin/bash\necho ECS_CLUSTER=${aws_ecs_cluster._.name} >> /etc/ecs/ecs.config"
 
   root_block_device {

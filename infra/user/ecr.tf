@@ -1,3 +1,3 @@
 resource "aws_ecr_repository" "_" {
-  name = "${replace(var.service, "-", "/")}"
+  name = "${var.ns}/${var.service}"
 }

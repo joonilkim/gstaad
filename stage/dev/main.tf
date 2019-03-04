@@ -3,7 +3,7 @@ variable "ns" {
 }
 
 variable "domain" {
-  default = "gstaad.co"
+  default = "gstaad.io"
 }
 
 variable "region" {
@@ -34,13 +34,38 @@ module "init" {
   bastion_key     = "${var.bastion_key}"
 }
 
+module "gateway" {
+  source          = "../../infra/gateway"
+
+  region          = "${var.region}"
+  stage           = "${local.stage}"
+  ns              = "${var.ns}"
+  service         = "gateway"
+  image_tag       = "develop"  # should be same as branch name
+
+  vpc_id          = "${module.init.vpc_id}"
+  pub_subnets     = "${module.init.pub_subnets}"
+  priv_subnets    = "${module.init.priv_subnets}"
+
+  secg            = "${module.init.secg_gw}"
+
+  lb_arn          = "${module.init.lb_arn}"
+  lb_tg_arn       = "${module.init.gw_tg_arn}"
+
+  ecs_service_role  = "${module.init.ecs_service_role}"
+  ecs_task_role     = "${module.init.ecs_task_role}"
+  ecs_instance_role = "${module.init.ecs_instance_role}"
+  ecs_cluster       = "${module.init.ecs_cluster}"
+}
+
+
 module "post" {
   source          = "../../infra/post"
 
   region          = "${var.region}"
   stage           = "${local.stage}"
   ns              = "${var.ns}"
-  service         = "${var.ns}-post"
+  service         = "post"
   image_tag       = "develop"  # should be same as branch name
 
   vpc_id          = "${module.init.vpc_id}"
@@ -51,14 +76,12 @@ module "post" {
   secg_svc        = "${module.init.secg_svc}"
   secg_db         = "${module.init.secg_db}"
 
-  lb_tg_arn       = "${module.init.post_tg_arn}"
-
   ecs_service_role  = "${module.init.ecs_service_role}"
   ecs_task_role     = "${module.init.ecs_task_role}"
   ecs_instance_role = "${module.init.ecs_instance_role}"
 
   ecs_cluster     = "${module.init.ecs_cluster}"
-  service_discovery_arn = "${module.init.service_discovery_arn}"
+  service_discovery_ns = "${module.init.service_discovery_ns_id}"
 }
 
 module "user" {
@@ -67,7 +90,7 @@ module "user" {
   region          = "${var.region}"
   stage           = "${local.stage}"
   ns              = "${var.ns}"
-  service         = "${var.ns}-user"
+  service         = "user"
   image_tag       = "develop"  # should be same as branch name
 
   vpc_id          = "${module.init.vpc_id}"
@@ -78,14 +101,12 @@ module "user" {
   secg_svc        = "${module.init.secg_svc}"
   secg_db         = "${module.init.secg_db}"
 
-  lb_tg_arn       = "${module.init.user_tg_arn}"
-
   ecs_service_role  = "${module.init.ecs_service_role}"
   ecs_task_role     = "${module.init.ecs_task_role}"
   ecs_instance_role = "${module.init.ecs_instance_role}"
 
   ecs_cluster     = "${module.init.ecs_cluster}"
-  service_discovery_arn = "${module.init.service_discovery_arn}"
+  service_discovery_ns = "${module.init.service_discovery_ns_id}"
 }
 
 output "lb_dns_name" {

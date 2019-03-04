@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"gstaad/svc/gateway/upstreams"
 	mw "gstaad/svc/gateway/middlewares"
+	"gstaad/svc/gateway/upstreams"
 
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -45,7 +45,7 @@ func newServer(addr string, l *log.Logger) (sv *server) {
 
 func (s *server) run() {
 	go func() {
-		logger.Infof("listening rest %s", s.server.Addr)
+		logger.Infof("listening: %s", s.server.Addr)
 		er := s.server.ListenAndServe()
 		if er != nil && er != http.ErrServerClosed {
 			logger.Fatalf("Failed: %s\n", er)

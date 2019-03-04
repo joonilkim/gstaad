@@ -42,20 +42,27 @@ jobs:
       - aws-ecs/update-service:
           family: gstaad-<<parameters.svc_name>>
           cluster-name: gstaad
+          service-name: <<parameters.svc_name>>
       - save_cache:
           key: gstaad-{{ .Branch }}-{{ epoch }}
           paths:
             - .meta
 workflows:
-  build_post:
+  deploy_post:
     jobs:
       - build_and_deploy:
           executor: golang
           svc_name: post
           svc_path: svc/post
-  build_user:
+  deploy_user:
     jobs:
       - build_and_deploy:
           executor: golang
           svc_name: user
           svc_path: svc/user
+  deploy_gateway:
+    jobs:
+      - build_and_deploy:
+          executor: golang
+          svc_name: gateway
+          svc_path: svc/gateway

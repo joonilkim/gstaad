@@ -8,21 +8,14 @@ resource "aws_ecs_service" "_" {
   desired_count                      = 1
   name                               = "${var.service}"
   task_definition                    = "${aws_ecs_task_definition._.arn}"
-  health_check_grace_period_seconds  = 20
-
-  load_balancer {
-    container_name   = "${var.service}"
-    container_port   = "9000"
-    target_group_arn = "${var.lb_tg_arn}"
-  }
 
   network_configuration {
-    subnets = ["${var.priv_subnets}"]
+    subnets         = ["${var.priv_subnets}"]
     security_groups = ["${var.secg_svc}"]
   }
 
   service_registries {
-    registry_arn     = "${var.service_discovery_arn}"
+    registry_arn     = "${aws_service_discovery_service._.arn}"
   }
 
   lifecycle {

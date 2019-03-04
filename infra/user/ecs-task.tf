@@ -3,21 +3,18 @@ locals {
 }
 
 resource "aws_ecs_task_definition" "_" {
-  family       = "${var.service}"
+  family       = "${var.ns}-${var.service}"
   network_mode = "awsvpc"
 
   container_definitions = <<-JSON
   [
     {
-      "name": "${var.service}",
+      "name": "${var.ns}-${var.service}",
       "image": "${local.ecr_uri}:${var.image_tag}",
       "memory": 900,
       "portMappings": [
         {
           "containerPort": 9000
-        },
-        {
-          "containerPort": 9001
         }
       ],
       "environment": [

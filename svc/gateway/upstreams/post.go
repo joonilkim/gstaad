@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const postServiceEndpoint = "post.gstaad:9000"
+const postServiceEndpoint = "post.gstaad.io:9000"
 
 type postService struct{}
 
