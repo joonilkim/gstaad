@@ -15,6 +15,6 @@ RUN go build -o /go/bin/gstaad .
 
 WORKDIR /go/bin
 RUN rm -rf /go/src/gstaad
-EXPOSE 9000
+EXPOSE 8080
 
 ENTRYPOINT ["/go/bin/gstaad"]

@@ -1,19 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-
-	postmock "gstaad/pkg/proto/post/mock"
-
-	"github.com/golang/mock/gomock"
-	assert "github.com/stretchr/testify/require"
-)
-
+/*
 func TestRoute(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -61,3 +48,5 @@ func TestRoute(t *testing.T) {
 	})
 
 }
+
+*/

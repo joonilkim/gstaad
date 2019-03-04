@@ -1,21 +1,14 @@
 package main
 
 import (
-	"context"
-	"testing"
-	"time"
+	"net"
+	"net/http"
+	"os"
 
-	poststub "gstaad/pkg/proto/post"
-	postmock "gstaad/pkg/proto/post/mock"
-	pb "gstaad/pkg/proto/user"
-
-	"github.com/golang/mock/gomock"
-	"github.com/golang/protobuf/ptypes"
-	empty "github.com/golang/protobuf/ptypes/empty"
-	assert "github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )
 
+/*
 func TestUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -54,4 +47,34 @@ func TestUser(t *testing.T) {
 		assert.NotEmpty(t, r.PostCount)
 	})
 
+}
+*/
+
+const mockSock = "unix:///tmp/test.sock"
+
+func startMockServer(ccs *connectors) (s *server) {
+	os.Remove(mockSock[7:])
+
+	s = newServer(mockSock, ccs)
+	cc, er := net.Listen("unix", mockSock[7:])
+	if er != nil {
+		panic(er)
+	}
+
+	go func() {
+		er := s.Server.Serve(cc)
+		if er != nil && er != http.ErrServerClosed {
+			panic(er)
+		}
+	}()
+	return
+}
+
+func mockConn() *grpc.ClientConn {
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	cc, er := grpc.Dial(mockSock, opts...)
+	if er != nil {
+		panic(er)
+	}
+	return cc
 }

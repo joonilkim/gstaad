@@ -1,44 +1,38 @@
 package main
 
 import (
-	"context"
-	"testing"
+	"net"
+	"net/http"
+	"os"
 
-	pb "gstaad/pkg/proto/post"
-
-	empty "github.com/golang/protobuf/ptypes/empty"
-	assert "github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )
 
-func TestPost(t *testing.T) {
-	addr := "unix:///tmp/test.sock"
-	gsv := startGrpc(addr)
-	defer gsv.Stop()
+const mockSock = "unix:///tmp/test.sock"
 
+func startMockServer() (s *server) {
+	os.Remove(mockSock[7:])
+
+	s = newServer(mockSock)
+	cc, er := net.Listen("unix", mockSock[7:])
+	if er != nil {
+		panic(er)
+	}
+
+	go func() {
+		er := s.Server.Serve(cc)
+		if er != nil && er != http.ErrServerClosed {
+			panic(er)
+		}
+	}()
+	return
+}
+
+func mockConn() *grpc.ClientConn {
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	conn, er := grpc.Dial(addr, opts...)
-	assert.NoError(t, er)
-	defer conn.Close()
-
-	post := pb.NewPostServiceClient(conn)
-
-	t.Run("create", func(t *testing.T) {
-		content := "testname"
-		r, er := post.Create(context.Background(), &pb.CreateRequest{Content: content})
-		assert.NoError(t, er)
-		assert.Equal(t, true, r.Result)
-	})
-
-	t.Run("all", func(t *testing.T) {
-		r, er := post.All(context.Background(), &empty.Empty{})
-		assert.NoError(t, er)
-		assert.NotEmpty(t, r.Items)
-	})
-
-	t.Run("count", func(t *testing.T) {
-		r, er := post.Count(context.Background(), &empty.Empty{})
-		assert.NoError(t, er)
-		assert.NotEmpty(t, r.Count)
-	})
+	cc, er := grpc.Dial(mockSock, opts...)
+	if er != nil {
+		panic(er)
+	}
+	return cc
 }

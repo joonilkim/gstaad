@@ -1,41 +1,49 @@
 package main
 
 import (
-	"context"
-	pb "gstaad/pkg/proto/user"
-	"time"
+	stub "gstaad/pkg/proto/user"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/golang/protobuf/ptypes"
-
-	empty "github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type server struct {
+	Addr       string
+	Server     *grpc.Server
 	connectors *connectors
 }
 
-func (s *server) Login(c context.Context, in *pb.LoginRequest) (*pb.LoginReply, error) {
-	expiresIn, _ := ptypes.TimestampProto(time.Now().AddDate(0, 0, 1))
-	return &pb.LoginReply{
-		Token: &pb.Token{
-			AccessToken: "testtoken",
-			ExpiresIn:   expiresIn,
-		},
-	}, nil
+func newServer(addr string, cc *connectors) (s *server) {
+	gs := grpc.NewServer()
+	s = &server{addr, gs, cc}
+	stub.RegisterUserServiceServer(gs, s)
+	reflection.Register(gs)
+	return
 }
 
-func (s *server) Profile(c context.Context, in *empty.Empty) (*pb.ProfileReply, error) {
-	var count int32
-	r, er := s.connectors.post.Count(c, &empty.Empty{})
-	if er == nil {
-		count = r.Count
+func (s *server) run() {
+	cc, er := net.Listen("tcp", s.Addr)
+	if er != nil {
+		panic(er)
 	}
 
-	return &pb.ProfileReply{
-		User: &pb.User{
-			Id:   "testuser",
-			Name: "testname",
-		},
-		PostCount: count,
-	}, nil
+	go func() {
+		logger.Infof("listening grpc %s", s.Addr)
+		er := s.Server.Serve(cc)
+		if er != nil && er != http.ErrServerClosed {
+			logger.Fatalf("Failed: %s\n", er)
+		}
+	}()
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+
+	logger.Info("Stopping operation...")
+	s.Server.GracefulStop()
 }

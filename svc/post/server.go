@@ -1,46 +1,48 @@
 package main
 
 import (
-	"context"
-	pb "gstaad/pkg/proto/post"
-	"time"
+	stub "gstaad/pkg/proto/post"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	empty "github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
-type server struct{}
-
-func (s *server) Create(c context.Context, in *pb.CreateRequest) (*pb.MutationReply, error) {
-	return &pb.MutationReply{Result: true}, nil
+type server struct {
+	Addr   string
+	Server *grpc.Server
 }
 
-func (s *server) All(c context.Context, in *empty.Empty) (*pb.PostsReply, error) {
-	author := pb.User{
-		Id:   "user1",
-		Name: "user1",
-	}
-
-	posts := []*pb.Post{
-		&pb.Post{
-			Id:        "post1",
-			Author:    &author,
-			Content:   "post1",
-			CreatedAt: time.Now().UnixNano() / 1000,
-		},
-		&pb.Post{
-			Id:        "post2",
-			Author:    &author,
-			Content:   "post2",
-			CreatedAt: time.Now().UnixNano() / 1000,
-		},
-	}
-	return &pb.PostsReply{
-		Items: posts,
-	}, nil
+func newServer(addr string) (s *server) {
+	gs := grpc.NewServer()
+	s = &server{addr, gs}
+	stub.RegisterPostServiceServer(gs, s)
+	reflection.Register(gs)
+	return
 }
 
-func (s *server) Count(c context.Context, in *empty.Empty) (*pb.CountReply, error) {
-	return &pb.CountReply{
-		Count: 10,
-	}, nil
+func (s *server) run() {
+	cc, er := net.Listen("tcp", s.Addr)
+	if er != nil {
+		panic(er)
+	}
+
+	go func() {
+		logger.Infof("listening grpc %s", s.Addr)
+		er := s.Server.Serve(cc)
+		if er != nil && er != http.ErrServerClosed {
+			logger.Fatalf("Failed: %s\n", er)
+		}
+	}()
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+
+	logger.Info("Stopping operation...")
+	s.Server.GracefulStop()
 }

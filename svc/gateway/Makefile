@@ -12,6 +12,6 @@ docker-build:
 
 dev: docker-build
 	docker run \
-		-p 9100:9000 -p 9101:9001 \
+		-p 8080:8080 \
 		--env-file .env --rm \
 		--name ${ns}-${service} ${ns}:${service}

@@ -17,3 +17,9 @@ func Getenv(key, defaultval string) string {
 	}
 	return defaultval
 }
+
+func Must(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
