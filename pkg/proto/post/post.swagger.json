@@ -15,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/posts": {
+    "/posts": {
       "get": {
         "operationId": "All",
         "responses": {
@@ -55,7 +55,7 @@
         ]
       }
     },
-    "/v1/posts/count": {
+    "/posts/count": {
       "get": {
         "operationId": "Count",
         "responses": {

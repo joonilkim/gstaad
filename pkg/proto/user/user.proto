@@ -42,12 +42,12 @@ message ProfileReply {
 service UserService {
   rpc Login (LoginRequest) returns (LoginReply) {
     option (google.api.http) = {
-      post: "/v1/users"
+      post: "/tokens"
       body: "*"
     };
   }
 
   rpc Profile (google.protobuf.Empty) returns (ProfileReply) {
-    option (google.api.http).get = "/v1/users";
+    option (google.api.http).get = "/me";
   }
 }

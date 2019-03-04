@@ -15,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/users": {
+    "/me": {
       "get": {
         "operationId": "Profile",
         "responses": {
@@ -29,7 +29,9 @@
         "tags": [
           "UserService"
         ]
-      },
+      }
+    },
+    "/tokens": {
       "post": {
         "operationId": "Login",
         "responses": {

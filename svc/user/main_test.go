@@ -43,7 +43,7 @@ func TestRoute(t *testing.T) {
 		s := fmt.Sprintf(`{"content": "%s"}`, content)
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/v1/users", strings.NewReader(s))
+		req, _ := http.NewRequest("POST", "/tokens", strings.NewReader(s))
 		router.ServeHTTP(w, req)
 		assert.Equal(t, 200, w.Code)
 
