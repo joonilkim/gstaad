@@ -20,7 +20,7 @@ func startMockServer() (s *server) {
 	}
 
 	go func() {
-		er := s.Server.Serve(cc)
+		er := s.grpc.Serve(cc)
 		if er != nil && er != http.ErrServerClosed {
 			panic(er)
 		}

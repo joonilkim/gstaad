@@ -20,7 +20,7 @@ func TestProfileAction(t *testing.T) {
 	postsvc := postmock.NewMockPostServiceClient(ctrl)
 
 	gs := startMockServer(&connectors{postsvc})
-	defer gs.Server.Stop()
+	defer gs.grpc.Stop()
 
 	cc := mockConn()
 	defer cc.Close()

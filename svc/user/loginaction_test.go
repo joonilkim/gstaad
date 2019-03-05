@@ -13,7 +13,7 @@ import (
 
 func TestLoginAction(t *testing.T) {
 	gs := startMockServer(&connectors{})
-	defer gs.Server.Stop()
+	defer gs.grpc.Stop()
 
 	cc := mockConn()
 	defer cc.Close()

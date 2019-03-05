@@ -1,0 +1,8 @@
+FROM envoyproxy/envoy:latest
+
+COPY svc/post/envoy.yaml /etc/envoy/envoy.yaml
+RUN mkdir -p /pb
+COPY pkg/proto/post/post.pb /pb/
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["envoy", "-c", "/etc/envoy/envoy.yaml"]

@@ -8,32 +8,37 @@ import (
 	"os/signal"
 	"syscall"
 
+	health "google.golang.org/grpc/health"
+	healthstub "google.golang.org/grpc/health/grpc_health_v1"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 type server struct {
-	Addr   string
-	Server *grpc.Server
+	*health.Server
+	addr string
+	grpc *grpc.Server
 }
 
 func newServer(addr string) (s *server) {
 	gs := grpc.NewServer()
-	s = &server{addr, gs}
+	s = &server{health.NewServer(), addr, gs}
 	stub.RegisterPostServiceServer(gs, s)
+	healthstub.RegisterHealthServer(gs, s)
 	reflection.Register(gs)
 	return
 }
 
 func (s *server) run() {
-	cc, er := net.Listen("tcp", s.Addr)
+	cc, er := net.Listen("tcp", s.addr)
 	if er != nil {
 		panic(er)
 	}
 
 	go func() {
-		logger.Infof("listening grpc %s", s.Addr)
-		er := s.Server.Serve(cc)
+		logger.Infof("listening grpc %s", s.addr)
+		er := s.grpc.Serve(cc)
 		if er != nil && er != http.ErrServerClosed {
 			logger.Fatalf("Failed: %s\n", er)
 		}
@@ -44,5 +49,5 @@ func (s *server) run() {
 	<-ch
 
 	logger.Info("Stopping operation...")
-	s.Server.GracefulStop()
+	s.grpc.GracefulStop()
 }

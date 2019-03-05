@@ -30,12 +30,12 @@ resource "aws_security_group" "svc" {
   vpc_id = "${aws_vpc._.id}"
 
   ingress = {
-    from_port = 9000
-    to_port   = 9000
+    from_port = 10000
+    to_port   = 10000
     protocol  = "tcp"
 
     security_groups = [
-      "${aws_security_group.gw.id}",
+      "${aws_security_group.lb.id}",
       "${aws_security_group.bastion.id}",
     ]
   }
@@ -112,29 +112,6 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-resource "aws_security_group" "gw" {
-  name   = "${var.ns}-gw"
-  vpc_id = "${aws_vpc._.id}"
-
-  ingress = {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
-
-    security_groups = [
-      "${aws_security_group.lb.id}",
-      "${aws_security_group.bastion.id}",
-    ]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 output "secg_lb" {
   value = "${aws_security_group.lb.id}"
 }
@@ -145,10 +122,6 @@ output "secg_svc" {
 
 output "secg_db" {
   value = "${aws_security_group.db.id}"
-}
-
-output "secg_gw" {
-  value = "${aws_security_group.gw.id}"
 }
 
 output "secg_bastion" {

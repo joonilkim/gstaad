@@ -12,7 +12,7 @@ import (
 
 func TestCountAction(t *testing.T) {
 	gs := startMockServer()
-	defer gs.Server.Stop()
+	defer gs.grpc.Stop()
 
 	cc := mockConn()
 	defer cc.Close()

@@ -11,6 +11,7 @@ resource "aws_service_discovery_service" "_" {
         routing_policy = "MULTIVALUE"
     }
 
+    # required to join lb target group
     health_check_custom_config {
         # The number of 30-second intervals before it changes the health status of a service instance
         failure_threshold = 1

@@ -1,10 +1,10 @@
 resource "aws_autoscaling_group" "_" {
   name                 = "${var.ns}"
-  desired_capacity     = 3
+  desired_capacity     = 2
   health_check_type    = "EC2"
   launch_configuration = "${aws_launch_configuration._.name}"
-  max_size             = 6
-  min_size             = 3
+  max_size             = 4
+  min_size             = 2
   force_delete         = true
 
   vpc_zone_identifier  = [

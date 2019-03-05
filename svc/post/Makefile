@@ -5,13 +5,14 @@ service := post
 test:
 	go test
 
-docker-build:
-	docker build \
-		-f Dockerfile \
-		-t ${ns}:${service} ${root}
+build:
+	docker-compose build envoy app
 
-dev: docker-build
-	docker run \
-		-p 9100:9000 -p 9101:9001 \
-		--env-file .env --rm \
-		--name ${ns}-${service} ${ns}:${service}
+build-envoy:
+	docker-compose build envoy
+
+dev: build-envoy
+	docker-compose run --rm --service-ports envoy
+
+stop:
+	docker-compose stop

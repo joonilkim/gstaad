@@ -56,6 +56,10 @@ workflows:
           svc_path: svc/post
           build_steps:
             - aws-ecr/build-and-push-image:
+                dockerfile: svc/post/Dockerfile.envoy
+                repo: gstaad/post/envoy
+                tag: ${CIRCLE_BRANCH}
+            - aws-ecr/build-and-push-image:
                 dockerfile: svc/post/Dockerfile
                 repo: gstaad/post
                 tag: ${CIRCLE_BRANCH}
@@ -67,17 +71,10 @@ workflows:
           svc_path: svc/user
           build_steps:
             - aws-ecr/build-and-push-image:
+                dockerfile: svc/user/Dockerfile.envoy
+                repo: gstaad/user/envoy
+                tag: ${CIRCLE_BRANCH}
+            - aws-ecr/build-and-push-image:
                 dockerfile: svc/user/Dockerfile
                 repo: gstaad/user
-                tag: ${CIRCLE_BRANCH}
-  deploy_gateway:
-    jobs:
-      - build_and_deploy:
-          executor: golang
-          svc_name: gateway
-          svc_path: svc/gateway
-          build_steps:
-            - aws-ecr/build-and-push-image:
-                dockerfile: svc/gateway/Dockerfile
-                repo: gstaad/gateway
                 tag: ${CIRCLE_BRANCH}

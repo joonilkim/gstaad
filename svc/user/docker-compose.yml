@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  envoy:
+    build:
+      context: ../..
+      dockerfile: svc/user/Dockerfile.envoy
+    ports:
+      - 10000:10000
+      - 9001:9001
+    depends_on:
+      - app
+  app:
+    env_file: ".env"
+    build:
+      context: ../..
+      dockerfile: svc/user/Dockerfile
+    ports:
+      - 9000:9000

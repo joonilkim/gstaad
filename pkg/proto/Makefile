@@ -20,4 +20,10 @@ gen-stub:
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--swagger_out=logtostderr=true:. \
 		${service}.proto
+	protoc -I/usr/local/include -I. \
+		--include_imports --include_source_info \
+		-I${GOPATH}/src \
+		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+		--descriptor_set_out=${service}.pb \
+		${service}.proto
 	go generate .

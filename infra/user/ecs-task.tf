@@ -1,5 +1,6 @@
 locals {
   ecr_uri = "${replace(aws_ecr_repository._.repository_url, "https://", "")}"
+  ecr_envoy_uri = "${replace(aws_ecr_repository.envoy.repository_url, "https://", "")}"
 }
 
 resource "aws_ecs_task_definition" "_" {
@@ -9,14 +10,9 @@ resource "aws_ecs_task_definition" "_" {
   container_definitions = <<-JSON
   [
     {
-      "name": "${var.ns}-${var.service}",
+      "name": "${var.service}",
       "image": "${local.ecr_uri}:${var.image_tag}",
-      "memory": 900,
-      "portMappings": [
-        {
-          "containerPort": 9000
-        }
-      ],
+      "memory": 600,
       "environment": [
         {
           "name": "APP_ENV",
@@ -29,6 +25,24 @@ resource "aws_ecs_task_definition" "_" {
           "awslogs-group": "${aws_cloudwatch_log_group._.name}",
           "awslogs-region": "${var.region}",
           "awslogs-stream-prefix": "app"
+        }
+      }
+    },
+    {
+      "name": "${var.service}-envoy",
+      "image": "${local.ecr_envoy_uri}:${var.image_tag}",
+      "memory": 350,
+      "portMappings": [
+        {
+          "containerPort": 10000
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${aws_cloudwatch_log_group._.name}",
+          "awslogs-region": "${var.region}",
+          "awslogs-stream-prefix": "envoy"
         }
       }
     }
