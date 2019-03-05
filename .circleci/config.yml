@@ -23,6 +23,9 @@ jobs:
         type: string
       svc_path:
         type: string
+      build_steps:
+        type: steps
+        default: []
     steps:
       - checkout
       - restore_cache:
@@ -35,10 +38,7 @@ jobs:
             git log --pretty=format:'%H' -n 1 -- <<parameters.svc_path>> > .meta/<<parameters.svc_name>>.hash.new
             ! diff .meta/<<parameters.svc_name>>.hash{,.new} > /dev/null
       - setup_remote_docker
-      - aws-ecr/build-and-push-image:
-          dockerfile: <<parameters.svc_path>>/Dockerfile
-          repo: gstaad/<<parameters.svc_name>>
-          tag: ${CIRCLE_BRANCH}
+      - steps: <<parameters.build_steps>>
       - aws-ecs/update-service:
           family: gstaad-<<parameters.svc_name>>
           cluster-name: gstaad
@@ -54,15 +54,30 @@ workflows:
           executor: golang
           svc_name: post
           svc_path: svc/post
+          build_steps:
+            - aws-ecr/build-and-push-image:
+                dockerfile: svc/post/Dockerfile
+                repo: gstaad/post
+                tag: ${CIRCLE_BRANCH}
   deploy_user:
     jobs:
       - build_and_deploy:
           executor: golang
           svc_name: user
           svc_path: svc/user
+          build_steps:
+            - aws-ecr/build-and-push-image:
+                dockerfile: svc/user/Dockerfile
+                repo: gstaad/user
+                tag: ${CIRCLE_BRANCH}
   deploy_gateway:
     jobs:
       - build_and_deploy:
           executor: golang
           svc_name: gateway
           svc_path: svc/gateway
+          build_steps:
+            - aws-ecr/build-and-push-image:
+                dockerfile: svc/gateway/Dockerfile
+                repo: gstaad/gateway
+                tag: ${CIRCLE_BRANCH}
