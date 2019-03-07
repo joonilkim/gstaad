@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  postservice-proxy:
+    build:
+      context: src/postservice
+      dockerfile: Dockerfile.proxy
+    ports:
+      - 80:9200
+      - 8080:9201
+  postservice:
+    build:
+      context: src/postservice
+      dockerfile: Dockerfile
+    ports:
+      - 8080:9202
+    environment:
+      PORT: 8080

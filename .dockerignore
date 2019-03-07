@@ -1,26 +1,18 @@
 **/.*
 
 **/build
-**/dist
 
 LICENSE
 VERSION
 **/*.md
 **/docker-compose.yml
 **/docs
-**/Dockerfile*
+**/Dockerfile.*
 **/*.local
-
-## node.js
-**/node_modules
-**/*.log
 
 ## binaries
 **/*.zip
 shared
 
-## terraform
-init
-prod
-**/*.tf
-**/.terraform
+aws
+staging

@@ -1,0 +1,6 @@
+FROM envoyproxy/envoy:latest
+
+COPY envoy/* pb /etc/envoy/
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["envoy", "-c", "/etc/envoy/envoy.yml"]
