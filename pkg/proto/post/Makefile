@@ -1,7 +1,0 @@
-root := ../../..
-service := post
-mockClient := PostServiceClient
-
-include ../Makefile
-
-all: gen-stub gen-mock

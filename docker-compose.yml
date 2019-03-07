@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  postservice.gstaad:
+    build:
+      context: src/postservice
+      dockerfile: Dockerfile
+    ports:
+      - 9202:8080
+    environment:
+      - PORT=8080
+  postservice-gw.gstaad:
+    build:
+      context: src/postservice
+      dockerfile: Dockerfile.gw
+    ports:
+      - 9200:80
+      - 9201:8081
+  userservice.gstaad:
+    build:
+      context: src/userservice
+      dockerfile: Dockerfile
+    ports:
+      - 9102:8080
+    environment:
+      - PORT=8080
+      - POSTSERVICE=postservice-gw.gstaad:80
+  userservice-gw.gstaad:
+    build:
+      context: src/userservice
+      dockerfile: Dockerfile.gw
+    ports:
+      - 9100:80
+      - 9101:8081

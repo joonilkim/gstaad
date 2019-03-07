@@ -1,9 +1,6 @@
 # temporal
 shared/
-dist/
-build/
 *.local
-.dynamodb/
 
 # editor
 *.swp
@@ -12,48 +9,3 @@ tags
 
 # personal
 TODO.md
-
-# terraform
-**/.terraform/*
-*.tfstate
-*.tfstate.*
-crash.log
-*.tfvars
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# node.js
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pids
-*.pid
-*.seed
-*.pid.lock
-lib-cov
-coverage
-.nyc_output
-.grunt
-bower_components
-.lock-wscript
-build/Release
-node_modules/
-jspm_packages/
-typings/
-.npm
-.eslintcache
-.node_repl_history
-*.tgz
-.yarn-integrity
-*.env
-.cache
-.next
-.nuxt
-.vuepress/dist
-.serverless/
-.fusebox/
-build/

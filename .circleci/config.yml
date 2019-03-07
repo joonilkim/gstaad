@@ -10,18 +10,43 @@ executors:
   golang:
     docker:
       - image: circleci/golang
-jobs:
+commands:
   build_and_deploy:
+    parameters:
+      enable:
+        type: boolean
+        default: true
+      service_name:
+        type: string
+      service_path:
+        type: string
+      build_steps:
+        type: steps
+        default: []
+    steps:
+      - when:
+          condition: <<parameters.enable>>
+          steps:
+            - setup_remote_docker
+            - steps: <<parameters.build_steps>>
+            - aws-ecs/update-service:
+                family: gstaad-<<parameters.service_name>>
+                cluster-name: gstaad
+                service-name: <<parameters.service_name>>
+            - save_cache:
+                key: gstaad-{{ .Branch }}-{{ epoch }}
+                paths:
+                  - .meta
+jobs:
+  all:
     executor: <<parameters.executor>>
-    environment:
-      stage: develop
     parameters:
       executor:
         type: executor
         default: default
-      svc_name:
+      service_name:
         type: string
-      svc_path:
+      service_path:
         type: string
       build_steps:
         type: steps
@@ -34,47 +59,55 @@ jobs:
       - run:
           command: |
             mkdir -p .meta
-            touch .meta/<<parameters.svc_name>>.hash
-            git log --pretty=format:'%H' -n 1 -- <<parameters.svc_path>> > .meta/<<parameters.svc_name>>.hash.new
-            ! diff .meta/<<parameters.svc_name>>.hash{,.new} > /dev/null
-      - setup_remote_docker
-      - steps: <<parameters.build_steps>>
-      - aws-ecs/update-service:
-          family: gstaad-<<parameters.svc_name>>
-          cluster-name: gstaad
-          service-name: <<parameters.svc_name>>
+            touch .meta/<<parameters.service_name>>.hash
+            git log --pretty=format:'%H' -n 1 -- <<parameters.service_path>> > .meta/<<parameters.service_name>>.hash.new
+            diff .meta/<<parameters.service_name>>.hash{,.new} > /dev/null
+            [ $? ] && echo 'export DIFF=1' >> $BASH_ENV
+      - build_and_deploy:
+          enable: ${DIFF}
+          service_name: <<parameters.service_name>>
+          service_path: <<parameters.service_path>>
+          build_steps: <<parameters.build_steps>>
       - save_cache:
           key: gstaad-{{ .Branch }}-{{ epoch }}
           paths:
             - .meta
 workflows:
-  deploy_post:
+  postservice:
     jobs:
-      - build_and_deploy:
+      - all:
           executor: golang
-          svc_name: post
-          svc_path: svc/post
+          service_name: postservice
+          service_path: src/postservice
           build_steps:
             - aws-ecr/build-and-push-image:
-                dockerfile: svc/post/Dockerfile.envoy
-                repo: gstaad/post/envoy
+                path: src/postservice
+                dockerfile: src/postservice/Dockerfile.gw
+                repo: gstaad/postservice-gw
                 tag: ${CIRCLE_BRANCH}
             - aws-ecr/build-and-push-image:
-                dockerfile: svc/post/Dockerfile
-                repo: gstaad/post
+                path: src/postservice
+                dockerfile: src/postservice/Dockerfile
+                repo: gstaad/postservice
                 tag: ${CIRCLE_BRANCH}
-  deploy_user:
+  userservice:
     jobs:
+      - diff:
+          service_name: userservice
+          service_path: src/userservice
       - build_and_deploy:
+          enable: ${DIFF}
           executor: golang
-          svc_name: user
-          svc_path: svc/user
+          service_name: userservice
+          service_path: src/userservice
           build_steps:
             - aws-ecr/build-and-push-image:
-                dockerfile: svc/user/Dockerfile.envoy
-                repo: gstaad/user/envoy
+                path: src/userservice
+                dockerfile: src/userservice/Dockerfile.gw
+                repo: gstaad/userservice-gw
                 tag: ${CIRCLE_BRANCH}
             - aws-ecr/build-and-push-image:
-                dockerfile: svc/user/Dockerfile
-                repo: gstaad/user
+                path: src/userservice
+                dockerfile: src/userservice/Dockerfile
+                repo: gstaad/userservice
                 tag: ${CIRCLE_BRANCH}
