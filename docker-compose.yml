@@ -9,6 +9,11 @@ services:
       - 9202:8080
     environment:
       - PORT=8080
+    healthcheck:
+      test: ["CMD-SHELL", "/bin/grpc_health_probe -addr=:8080 || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 2
   postservice-gw.gstaad:
     build:
       context: src/postservice
@@ -16,7 +21,16 @@ services:
     ports:
       - 9200:80
       - 9201:8081
+    healthcheck:
+      interval: 5s
+      timeout: 2s
+      retries: 4
   userservice.gstaad:
+    healthcheck:
+      test: ["CMD-SHELL", "/bin/grpc_health_probe -addr=:8080 || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 2
     build:
       context: src/userservice
       dockerfile: Dockerfile
@@ -26,6 +40,10 @@ services:
       - PORT=8080
       - POSTSERVICE=postservice-gw.gstaad:80
   userservice-gw.gstaad:
+    healthcheck:
+      interval: 5s
+      timeout: 2s
+      retries: 4
     build:
       context: src/userservice
       dockerfile: Dockerfile.gw

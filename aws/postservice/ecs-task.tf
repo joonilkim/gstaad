@@ -27,6 +27,13 @@ resource "aws_ecs_task_definition" "_" {
           "value": "80"
         }
       ],
+      "healthCheck": {
+        "command": ["CMD-SHELL, /bin/grpc_health_probe -addr=:8080 || exit 1"],
+        "interval": 5,
+        "timeout": 2,
+        "retries": 2,
+        "startPeriod": 5
+      },
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {

@@ -21,4 +21,6 @@ RUN go build -o /go/bin/gstaad .
 WORKDIR /go/bin
 RUN rm -rf /go/src/gstaad
 
+HEALTHCHECK --interval=5s --timeout=2s --start-period=5s --retries=2 CMD "/bin/grpc_health_probe -addr=:8080 || exit 1"
+
 CMD ["/go/bin/gstaad"]
