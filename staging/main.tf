@@ -41,7 +41,6 @@ module "postservice" {
   stage           = "${local.stage}"
   ns              = "${var.ns}"
   service         = "postservice"
-  image_tag       = "develop"  # should be same as branch name
 
   vpc_id          = "${module.init.vpc_id}"
   pub_subnets     = "${module.init.pub_subnets}"
@@ -68,7 +67,6 @@ module "userservice" {
   stage           = "${local.stage}"
   ns              = "${var.ns}"
   service         = "userservice"
-  image_tag       = "develop"  # should be same as branch name
 
   vpc_id          = "${module.init.vpc_id}"
   pub_subnets     = "${module.init.pub_subnets}"

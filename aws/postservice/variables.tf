@@ -25,4 +25,3 @@ variable "ecs_instance_role" {}
 
 variable "ecs_cluster" {}
 variable "service_discovery_ns" {}
-variable "image_tag" {}

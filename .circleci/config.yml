@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  aws-ecr: circleci/aws-ecr@3.0.0
+  aws-cli: circleci/aws-cli@0.1.7
   aws-ecs: circleci/aws-ecs@0.0.6
 executors:
   default:
@@ -11,32 +11,31 @@ executors:
     docker:
       - image: circleci/golang
 commands:
-  build_and_deploy:
+  ecr_build_push:
     parameters:
-      enable:
-        type: boolean
-        default: true
-      service_name:
+      path:
         type: string
-      service_path:
+      dockerfile:
         type: string
-      build_steps:
-        type: steps
-        default: []
+      repo:
+        type: string
     steps:
-      - when:
-          condition: <<parameters.enable>>
-          steps:
-            - setup_remote_docker
-            - steps: <<parameters.build_steps>>
-            - aws-ecs/update-service:
-                family: gstaad-<<parameters.service_name>>
-                cluster-name: gstaad
-                service-name: <<parameters.service_name>>
-            - save_cache:
-                key: gstaad-{{ .Branch }}-{{ epoch }}
-                paths:
-                  - .meta
+      - aws-cli/install
+      - aws-cli/configure:
+          aws-region: AWS_REGION
+      - run:
+          name: Build <<parameters.repo>>
+          command: |
+            docker build -t <<parameters.repo>> -f <<parameters.dockerfile>> <<parameters.path>>
+      - run:
+          name: Push <<parameters.repo>>
+          command: |
+            eval $(aws ecr get-login --region $AWS_REGION --no-include-email)
+            ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<<parameters.repo>>
+            docker tag <<parameters.repo>> $ECR_REPO:$GITHASH
+            docker push $ECR_REPO:$GITHASH
+            docker tag <<parameters.repo>> $ECR_REPO:latest
+            docker push $ECR_REPO:latest
 jobs:
   all:
     executor: <<parameters.executor>>
@@ -53,25 +52,17 @@ jobs:
         default: []
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - gstaad-{{ .Branch }}
       - run:
+          name: githash
           command: |
-            mkdir -p .meta
-            touch .meta/<<parameters.service_name>>.hash
-            git log --pretty=format:'%H' -n 1 -- <<parameters.service_path>> > .meta/<<parameters.service_name>>.hash.new
-            diff .meta/<<parameters.service_name>>.hash{,.new} > /dev/null
-            [ $? ] && echo 'export DIFF=1' >> $BASH_ENV
-      - build_and_deploy:
-          enable: ${DIFF}
-          service_name: <<parameters.service_name>>
-          service_path: <<parameters.service_path>>
-          build_steps: <<parameters.build_steps>>
-      - save_cache:
-          key: gstaad-{{ .Branch }}-{{ epoch }}
-          paths:
-            - .meta
+            echo 'export GITHASH=$(git log --pretty=format:'%H' -n 1 -- <<parameters.service_path>> )' >> $BASH_ENV
+      - setup_remote_docker
+      - steps: <<parameters.build_steps>>
+      - aws-ecs/update-service:
+          family: gstaad-<<parameters.service_name>>
+          cluster-name: gstaad
+          service-name: <<parameters.service_name>>
+          container-image-name-updates: 'tag=${GITHASH}'
 workflows:
   postservice:
     jobs:
@@ -80,34 +71,26 @@ workflows:
           service_name: postservice
           service_path: src/postservice
           build_steps:
-            - aws-ecr/build-and-push-image:
+            - ecr_build_push:
                 path: src/postservice
                 dockerfile: src/postservice/Dockerfile.gw
                 repo: gstaad/postservice-gw
-                tag: ${CIRCLE_BRANCH}
-            - aws-ecr/build-and-push-image:
+            - ecr_build_push:
                 path: src/postservice
                 dockerfile: src/postservice/Dockerfile
                 repo: gstaad/postservice
-                tag: ${CIRCLE_BRANCH}
   userservice:
     jobs:
-      - diff:
-          service_name: userservice
-          service_path: src/userservice
-      - build_and_deploy:
-          enable: ${DIFF}
+      - all:
           executor: golang
           service_name: userservice
           service_path: src/userservice
           build_steps:
-            - aws-ecr/build-and-push-image:
+            - ecr_build_push:
                 path: src/userservice
                 dockerfile: src/userservice/Dockerfile.gw
                 repo: gstaad/userservice-gw
-                tag: ${CIRCLE_BRANCH}
-            - aws-ecr/build-and-push-image:
+            - ecr_build_push:
                 path: src/userservice
                 dockerfile: src/userservice/Dockerfile
                 repo: gstaad/userservice
-                tag: ${CIRCLE_BRANCH}

@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "_" {
   [
     {
       "name": "${var.service}",
-      "image": "${local.ecr_uri}:${var.image_tag}",
+      "image": "${local.ecr_uri}:latest",
       "memoryReservation": 128,
       "environment": [
         {
@@ -38,7 +38,7 @@ resource "aws_ecs_task_definition" "_" {
     },
     {
       "name": "${var.service}-gw",
-      "image": "${local.gw_ecr}:${var.image_tag}",
+      "image": "${local.gw_ecr}:latest",
       "memoryReservation": 128,
       "portMappings": [
         {
