@@ -1,3 +1,6 @@
+include .env
+export
+
 pbdir  := ../../pb
 protos := postservice
 googleapis := ${GOPATH}/src/googleapis
@@ -23,4 +26,4 @@ test:
 	PORT=-1 go test
 
 run:
-	PORT=9100 go run . -v=INFO
+	PORT=9200 go run . -v=INFO

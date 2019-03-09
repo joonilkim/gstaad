@@ -23,8 +23,8 @@ resource "aws_ecs_task_definition" "_" {
           "value": "8080"
         },
         {
-          "name": "POSTSERVICE",
-          "value": "80"
+          "name": "AWS_REGION",
+          "value": "${var.region}"
         }
       ],
       "healthCheck": {

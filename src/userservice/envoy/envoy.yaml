@@ -36,6 +36,27 @@ static_resources:
                           route:
                             cluster: local_service
                 http_filters:
+                  - name: envoy.filters.http.jwt_authn
+                    config:
+                      providers:
+                        cognito:
+                          issuer: https://cognito-idp.${AWS_REGION}.amazonaws.com/${COGNITO_USERPOOL_ID}
+                          forward_payload_header: "x-jwt-payload"
+                          payload_in_metadata: "x-jwt-payload"
+                          from_headers:
+                            - name: Authorization
+                              value_prefix: "Bearer "
+                          remote_jwks:
+                            http_uri:
+                              uri: https://cognito-idp.${AWS_REGION}.amazonaws.com/${COGNITO_USERPOOL_ID}/.well-known/jwks.json
+                              cluster: cognito|443
+                            cache_duration:
+                              seconds: 300
+                      rules:           
+                        - match:
+                            prefix: /
+                          requires:
+                            allow_missing_or_failed: {}
                   - name: envoy.grpc_json_transcoder
                     config:
                       proto_descriptor: "/etc/envoy/pb/userservice.pb"
@@ -85,6 +106,11 @@ static_resources:
       dns_lookup_family: V4_ONLY
       lb_policy: ROUND_ROBIN
       http2_protocol_options: {}
+      hosts:
+        - socket_address:
+            protocol: TCP
+            address: userservice.gstaad
+            port_value: 8080
       health_checks:
         - timeout: 1s
           interval: 5s
@@ -92,8 +118,13 @@ static_resources:
           unhealthy_threshold: 3
           healthy_threshold: 3
           grpc_health_check: {}
+    - name: cognito|443
+      type: LOGICAL_DNS
+      dns_lookup_family: V4_ONLY
+      connect_timeout: 20s
+      lb_policy: ROUND_ROBIN
       hosts:
-        - socket_address:
-            protocol: TCP
-            address: userservice.gstaad
-            port_value: 8080
+      - socket_address:
+          address: cognito-idp.${AWS_REGION}.amazonaws.com
+          port_value: 443
+      tls_context: { sni: cognito-idp.${AWS_REGION}.amazonaws.com }

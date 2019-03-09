@@ -19,6 +19,9 @@ commands:
         type: string
       repo:
         type: string
+      build_args:
+        type: string
+        default: ""
     steps:
       - aws-cli/install
       - aws-cli/configure:
@@ -26,7 +29,7 @@ commands:
       - run:
           name: Build <<parameters.repo>>
           command: |
-            docker build -t <<parameters.repo>> -f <<parameters.dockerfile>> <<parameters.path>>
+            docker build <<parameters.build_args>> -t <<parameters.repo>> -f <<parameters.dockerfile>> <<parameters.path>>
       - run:
           name: Push <<parameters.repo>>
           command: |
@@ -50,6 +53,9 @@ jobs:
       build_steps:
         type: steps
         default: []
+      env_var_updates:
+        type: string
+        default: ""
     steps:
       - checkout
       - run:
@@ -63,6 +69,7 @@ jobs:
           cluster-name: gstaad
           service-name: <<parameters.service_name>>
           container-image-name-updates: 'tag=${GITHASH}'
+          container-env-var-updates: <<parameters.env_var_updates>>
 workflows:
   postservice:
     jobs:
@@ -73,8 +80,9 @@ workflows:
           build_steps:
             - ecr_build_push:
                 path: src/postservice
-                dockerfile: src/postservice/Dockerfile.gw
+                dockerfile: tools/envoy/Dockerfile
                 repo: gstaad/postservice-gw
+                build_args: "--build-arg COGNITO_USERPOOL_ID=${COGNITO_USERPOOL_ID}"
             - ecr_build_push:
                 path: src/postservice
                 dockerfile: src/postservice/Dockerfile
@@ -88,9 +96,13 @@ workflows:
           build_steps:
             - ecr_build_push:
                 path: src/userservice
-                dockerfile: src/userservice/Dockerfile.gw
+                dockerfile: tools/envoy/Dockerfile
                 repo: gstaad/userservice-gw
+                build_args: "--build-arg COGNITO_USERPOOL_ID=${COGNITO_USERPOOL_ID}"
             - ecr_build_push:
                 path: src/userservice
                 dockerfile: src/userservice/Dockerfile
                 repo: gstaad/userservice
+          env_var_updates: >-
+            container=userservice,name=COGNITO_USERPOOL_ID,value=${COGNITO_USERPOOL_ID}
+            ,container=userservice,name=COGNITO_CLIENT_ID,value=${COGNITO_CLIENT_ID}

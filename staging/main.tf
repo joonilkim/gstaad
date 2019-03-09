@@ -1,11 +1,9 @@
 variable "ns" {
   default = "gstaad"
 }
-
 variable "domain" {
   default = "gstaad.io"
 }
-
 variable "region" {
   default = "ap-northeast-1"
 }
@@ -13,7 +11,6 @@ variable "region" {
 variable "bastion_key" {
   default = ""
 }
-
 variable "bastion_on" {
   default = false
 }
@@ -56,7 +53,7 @@ module "postservice" {
   ecs_task_role     = "${module.init.ecs_task_role}"
   ecs_instance_role = "${module.init.ecs_instance_role}"
 
-  ecs_cluster     = "${module.init.ecs_cluster}"
+  ecs_cluster          = "${module.init.ecs_cluster}"
   service_discovery_ns = "${module.init.service_discovery_ns_id}"
 }
 
@@ -82,7 +79,7 @@ module "userservice" {
   ecs_task_role     = "${module.init.ecs_task_role}"
   ecs_instance_role = "${module.init.ecs_instance_role}"
 
-  ecs_cluster     = "${module.init.ecs_cluster}"
+  ecs_cluster          = "${module.init.ecs_cluster}"
   service_discovery_ns = "${module.init.service_discovery_ns_id}"
 }
 

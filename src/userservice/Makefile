@@ -1,3 +1,6 @@
+include .env
+export
+
 pbdir  := ../../pb
 protos := userservice
 googleapis := ${GOPATH}/src/googleapis

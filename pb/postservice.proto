@@ -10,8 +10,7 @@ message MutationReply {
 }
 
 message User {
-  string id = 1;
-  string name = 2;
+  string email = 1;
 }
 
 message Post {

@@ -3,7 +3,6 @@ syntax = "proto3";
 package userservice;
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 message MutationReply {
@@ -11,18 +10,23 @@ message MutationReply {
 }
 
 message User {
-  string id = 1;
-  string name = 2;
+  string email = 1;
   int64 createdAt = 15;
 }
 
 message Token {
   string accessToken = 1;
-  google.protobuf.Timestamp expiresIn = 15;
+  int64 expiresIn = 15;
+}
+
+message SignupRequest {
+  string email = 1;
+  string password = 2;
 }
 
 message LoginRequest {
-  string name = 1;
+  string email = 1;
+  string password = 2;
 }
 
 message LoginReply {
@@ -34,7 +38,18 @@ message ProfileReply {
   int32 postCount = 2;
 }
 
+message UnregisterRequest {
+  string token = 1;
+}
+
 service UserService {
+  rpc Signup (SignupRequest) returns (MutationReply) {
+    option (google.api.http) = {
+      post: "/users"
+      body: "*"
+    };
+  }
+
   rpc Login (LoginRequest) returns (LoginReply) {
     option (google.api.http) = {
       post: "/tokens"
@@ -45,4 +60,12 @@ service UserService {
   rpc Profile (google.protobuf.Empty) returns (ProfileReply) {
     option (google.api.http).get = "/me";
   }
+
+  rpc Unregister (UnregisterRequest) returns (MutationReply) {
+    option (google.api.http) = {
+      delete: "/users"
+      body: "*"
+    };
+  }
+
 }

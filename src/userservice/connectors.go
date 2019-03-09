@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+
+	"gstaad/src/userservice/cognito"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"
@@ -13,10 +17,13 @@ import (
 )
 
 type connectors struct {
+	authSvc cognito.CognitoClient
 	postSvc postpb.PostServiceClient
 }
 
 func newConnectors(ctx context.Context) (cc *connectors) {
+	sess := session.Must(session.NewSession())
+
 	if os.Getenv("APP_ENV") == "production" {
 		resolver.SetDefaultScheme("dns")
 	}
@@ -26,6 +33,7 @@ func newConnectors(ctx context.Context) (cc *connectors) {
 	mustGetConn(ctx, &postcc, mustGetenv("POSTSERVICE"))
 
 	cc = &connectors{}
+	cc.authSvc = cognito.NewCognitoClient(sess)
 	cc.postSvc = postpb.NewPostServiceClient(postcc)
 	return
 }

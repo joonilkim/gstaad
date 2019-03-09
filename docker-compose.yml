@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 9202:8080
+    env_file: "src/postservice/.env"
     environment:
-      - APP_ENV=production
       - PORT=8080
     healthcheck:
       test: ["CMD-SHELL", "/bin/grpc_health_probe -addr=:8080 || exit 1"]
@@ -18,37 +18,39 @@ services:
   postservice-gw.gstaad:
     build:
       context: src/postservice
-      dockerfile: Dockerfile.gw
+      dockerfile: ../../tools/envoy/Dockerfile
     ports:
       - 9200:80
       - 9201:8081
+    env_file: "src/postservice/.env"
     healthcheck:
       interval: 5s
       timeout: 2s
       retries: 4
   userservice.gstaad:
-    healthcheck:
-      test: ["CMD-SHELL", "/bin/grpc_health_probe -addr=:8080 || exit 1"]
-      interval: 5s
-      timeout: 2s
-      retries: 2
     build:
       context: src/userservice
       dockerfile: Dockerfile
     ports:
       - 9102:8080
+    env_file: "src/userservice/.env"
     environment:
-      - APP_ENV=production
       - PORT=8080
-      - POSTSERVICE=dns:///postservice-gw.gstaad:80
+      - POSTSERVICE=dns:///postservice.gstaad:8080
+    healthcheck:
+      test: ["CMD-SHELL", "/bin/grpc_health_probe -addr=:8080 || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 2
   userservice-gw.gstaad:
+    build:
+      context: src/userservice
+      dockerfile: ../../tools/envoy/Dockerfile
+    ports:
+      - 9100:80
+      - 9101:8081
+    env_file: "src/userservice/.env"
     healthcheck:
       interval: 5s
       timeout: 2s
       retries: 4
-    build:
-      context: src/userservice
-      dockerfile: Dockerfile.gw
-    ports:
-      - 9100:80
-      - 9101:8081

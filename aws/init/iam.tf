@@ -58,6 +58,16 @@ data "aws_iam_policy_document" "task" {
       "ecr:BatchCheckLayerAvailability",
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
+      "cognito-idp:*",
+    ]
+    resources = ["*"]
+  }
+  statement {
+    effect    = "Deny"
+    actions   = [
+      "cognito-idp:*IdentityProvider*",
+      "cognito-idp:*UserPool*",
+      "cognito-idp:*ResourceServer*",
     ]
     resources = ["*"]
   }

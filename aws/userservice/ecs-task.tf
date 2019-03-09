@@ -23,8 +23,20 @@ resource "aws_ecs_task_definition" "_" {
           "value": "8080"
         },
         {
+          "name": "AWS_REGION",
+          "value": "${var.region}"
+        },
+        {
+          "name": "COGNITO_USERPOOL_ID",
+          "value": ""
+        },
+        {
+          "name": "COGNITO_CLIENT_ID",
+          "value": ""
+        },
+        {
           "name": "POSTSERVICE",
-          "value": "dns:///postservice.${var.ns}:80"
+          "value": "dns:///postservice.${var.ns}:8080"
         }
       ],
       "healthCheck": {
