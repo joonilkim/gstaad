@@ -19,6 +19,6 @@ COPY . ${SERVICE_PATH}
 RUN go build -o /go/bin/gstaad .
 
 WORKDIR /go/bin
-RUN rm -rf /go/src/gstaad
+RUN rm -rf /go/src /go/pkg
 
 CMD ["/go/bin/gstaad"]

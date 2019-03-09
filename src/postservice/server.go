@@ -15,6 +15,7 @@ import (
 
 	postpb "gstaad/src/postservice/pb"
 
+	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 

@@ -1,31 +1,52 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"os"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/resolver"
 
 	postpb "gstaad/src/postservice/pb"
 )
 
 type connectors struct {
-	postservice postpb.PostServiceClient
+	postSvc postpb.PostServiceClient
 }
 
-func newConnectors() (*connectors, error) {
-	ps, er := newPostServiceClient()
-	if er != nil {
-		return nil, er
+func newConnectors(ctx context.Context) (cc *connectors) {
+	if os.Getenv("APP_ENV") == "production" {
+		resolver.SetDefaultScheme("dns")
 	}
 
-	return &connectors{ps}, nil
+	// connections can be shared across multiple clients via multiplexing
+	postcc := new(grpc.ClientConn)
+	mustGetConn(ctx, &postcc, mustGetenv("POSTSERVICE"))
+
+	cc = &connectors{}
+	cc.postSvc = postpb.NewPostServiceClient(postcc)
+	return
 }
 
-func newPostServiceClient() (postpb.PostServiceClient, error) {
-	addr := mustGetenv("POSTSERVICE")
-
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	cc, er := grpc.Dial(addr, opts...)
+func mustGetConn(ctx context.Context, cc **grpc.ClientConn, addr string) {
+	var er error
+	*cc, er = grpc.DialContext(ctx, addr, defaultDialOpts()...)
 	if er != nil {
-		return nil, er
+		panic(fmt.Sprintf("grpc: failed to connect %s", addr))
 	}
-	return postpb.NewPostServiceClient(cc), nil
+}
+
+func defaultDialOpts() []grpc.DialOption {
+	// use non-blocking
+	// Dial returns a client that does not have any servers connected and continues
+	// to watch for connection in the background. Failure occurs at RPC time
+	// if no server has been found.
+	return []grpc.DialOption{
+		grpc.WithInsecure(),
+		grpc.WithBalancerName(roundrobin.Name),
+		// use default backoff. max 2min
+		// use default keepalive. inifinity and 20s ping intervals
+	}
 }

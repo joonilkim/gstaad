@@ -28,7 +28,7 @@ resource "aws_ecs_task_definition" "_" {
         }
       ],
       "healthCheck": {
-        "command": ["CMD-SHELL, /bin/grpc_health_probe -addr=:8080 || exit 1"],
+        "command": ["CMD-SHELL", "/bin/grpc_health_probe -addr=:8080 || exit 1"],
         "interval": 5,
         "timeout": 2,
         "retries": 2,

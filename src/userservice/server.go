@@ -15,13 +15,14 @@ import (
 
 	userpb "gstaad/src/userservice/pb"
 
+	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type server struct {
-	addr       string
-	grpc       *grpc.Server
-	connectors *connectors
+	addr string
+	grpc *grpc.Server
+	cc   *connectors
 }
 
 func newServer(addr string, cc *connectors) (s *server) {

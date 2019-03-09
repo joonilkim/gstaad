@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -25,8 +26,8 @@ func init() {
 }
 
 func main() {
-	cc, er := newConnectors()
-	must(er)
+	ctx := context.Background()
+	cc := newConnectors(ctx)
 
 	addr := ":" + port
 	s := newServer(addr, cc)
