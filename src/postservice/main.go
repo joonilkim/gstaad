@@ -1,10 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 const (
@@ -12,19 +13,32 @@ const (
 )
 
 var (
-	port   = mustGetenv("PORT")
-	logger = logrus.New()
+	port     = mustGetenv("PORT")
+	logger   *zap.Logger
+	loglevel = zap.LevelFlag("v", zap.InfoLevel, "")
 )
 
 func init() {
+	var cfg zap.Config
+
 	if os.Getenv("APP_ENV") == "production" {
-		logger.SetFormatter(&logrus.JSONFormatter{})
+		cfg = zap.NewProductionConfig()
 	} else {
-		logger.SetFormatter(&logrus.TextFormatter{})
+		cfg = zap.NewDevelopmentConfig()
+		//cfg.Level.SetLevel(zapcore.DebugLevel)
 	}
+
+	flag.Parse()
+	cfg.Level.SetLevel(*loglevel)
+
+	var er error
+	logger, er = cfg.Build()
+	must(er)
 }
 
 func main() {
+	defer logger.Sync()
+
 	addr := ":" + port
 	s := newServer(addr, &connectors{})
 	s.run()

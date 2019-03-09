@@ -8,6 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapgrpc"
+	"google.golang.org/grpc/grpclog"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -20,14 +24,18 @@ import (
 )
 
 type server struct {
+	log  *zap.SugaredLogger
 	addr string
 	grpc *grpc.Server
 	cc   *connectors
 }
 
 func newServer(addr string, cc *connectors) (s *server) {
+	// TODO: support SetLoggerV2
+	grpclog.SetLogger(zapgrpc.NewLogger(logger, zapgrpc.WithDebug()))
 	gs := grpc.NewServer()
-	s = &server{addr, gs, cc}
+
+	s = &server{logger.Sugar(), addr, gs, cc}
 	userpb.RegisterUserServiceServer(gs, s)
 	healthpb.RegisterHealthServer(gs, s)
 	reflection.Register(gs)
@@ -41,10 +49,10 @@ func (s *server) run() {
 	}
 
 	go func() {
-		logger.Infof("listening grpc %s", s.addr)
+		s.log.Infof("listening grpc %s", s.addr)
 		er := s.grpc.Serve(cc)
 		if er != nil && er != http.ErrServerClosed {
-			logger.Fatalf("Failed: %s\n", er)
+			s.log.Fatalf("Failed: %s\n", er)
 		}
 	}()
 
@@ -52,7 +60,7 @@ func (s *server) run() {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	<-ch
 
-	logger.Info("Stopping operation...")
+	s.log.Info("Stopping operation...")
 	s.grpc.GracefulStop()
 }
 

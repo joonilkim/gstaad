@@ -23,4 +23,4 @@ test:
 	PORT=-1 go test
 
 run:
-	PORT=9100 POSTSERVICE=:9200 go run .
+	PORT=9100 POSTSERVICE=:9200 go run . -v=INFO

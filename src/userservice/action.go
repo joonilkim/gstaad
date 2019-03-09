@@ -43,7 +43,7 @@ func (s *server) postCount(c context.Context) (cnt int32) {
 	// actually no need to compress for this
 	r, er := s.cc.postSvc.Count(c, &empty.Empty{}, grpc.UseCompressor(gzip.Name))
 	if er != nil {
-		logger.Errorf("Fail to connect postservice: %v", er)
+		s.log.Errorf("Fail to connect postservice: %v", er)
 	} else {
 		cnt = r.Count
 	}
