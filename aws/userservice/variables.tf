@@ -24,3 +24,6 @@ variable "ecs_instance_role" {}
 
 variable "ecs_cluster" {}
 variable "service_discovery_ns" {}
+
+variable "cognito_userpool_id" {}
+variable "cognito_client_id" {}

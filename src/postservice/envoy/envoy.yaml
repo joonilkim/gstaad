@@ -109,7 +109,7 @@ static_resources:
       hosts:
         - socket_address:
             protocol: TCP
-            address: postservice.gstaad
+            address: ${UPSTREAM}
             port_value: 8080
       health_checks:
         - timeout: 1s

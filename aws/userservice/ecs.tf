@@ -4,7 +4,8 @@ data "aws_ecs_cluster" "_" {
 
 resource "aws_ecs_service" "_" {
   cluster                            = "${data.aws_ecs_cluster._.id}"
-  deployment_minimum_healthy_percent = 0
+  launch_type                        = "FARGATE"
+  deployment_minimum_healthy_percent = 50
   desired_count                      = 1
   name                               = "${var.service}"
   task_definition                    = "${aws_ecs_task_definition._.arn}"
@@ -17,8 +18,9 @@ resource "aws_ecs_service" "_" {
   }
 
   network_configuration {
-    subnets         = ["${var.priv_subnets}"]
-    security_groups = ["${var.secg_svc}"]
+    subnets          = ["${var.priv_subnets}"]
+    security_groups  = ["${var.secg_svc}"]
+    assign_public_ip = "true"
   }
 
   service_registries {

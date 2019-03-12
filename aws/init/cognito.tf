@@ -35,3 +35,10 @@ resource "aws_cognito_user_pool_client" "_" {
   explicit_auth_flows    = ["ADMIN_NO_SRP_AUTH", "USER_PASSWORD_AUTH"]
 }
 
+output "cognito_userpool_id" {
+  value = "${aws_cognito_user_pool._.id}"
+}
+
+output "cognito_client_id" {
+  value = "${aws_cognito_user_pool_client._.id}"
+}

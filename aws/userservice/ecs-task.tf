@@ -4,8 +4,11 @@ locals {
 }
 
 resource "aws_ecs_task_definition" "_" {
-  family       = "${var.ns}-${var.service}"
-  network_mode = "awsvpc"
+  family                   = "${var.ns}-${var.service}"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = 256
+  memory                   = 512
+  network_mode             = "awsvpc"
 
   container_definitions = <<-JSON
   [
@@ -13,6 +16,11 @@ resource "aws_ecs_task_definition" "_" {
       "name": "${var.service}",
       "image": "${local.ecr_uri}:latest",
       "memoryReservation": 128,
+      "portMappings": [
+        {
+          "containerPort": 8080
+        }
+      ],
       "environment": [
         {
           "name": "APP_ENV",
@@ -28,11 +36,11 @@ resource "aws_ecs_task_definition" "_" {
         },
         {
           "name": "COGNITO_USERPOOL_ID",
-          "value": ""
+          "value": "${var.cognito_userpool_id}"
         },
         {
           "name": "COGNITO_CLIENT_ID",
-          "value": ""
+          "value": "${var.cognito_client_id}"
         },
         {
           "name": "POSTSERVICE",
@@ -76,5 +84,6 @@ resource "aws_ecs_task_definition" "_" {
   ]
   JSON
 
-  task_role_arn = "${data.aws_iam_role.task.arn}"
+  task_role_arn      = "${data.aws_iam_role.task.arn}"
+  execution_role_arn = "${data.aws_iam_role.task.arn}"
 }

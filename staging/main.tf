@@ -75,9 +75,12 @@ module "userservice" {
 
   lb_tg_arn       = "${module.init.userservice_tg}"
 
-  ecs_service_role  = "${module.init.ecs_service_role}"
-  ecs_task_role     = "${module.init.ecs_task_role}"
-  ecs_instance_role = "${module.init.ecs_instance_role}"
+  cognito_userpool_id  = "${module.init.cognito_userpool_id}"
+  cognito_client_id    = "${module.init.cognito_client_id}"
+
+  ecs_service_role     = "${module.init.ecs_service_role}"
+  ecs_task_role        = "${module.init.ecs_task_role}"
+  ecs_instance_role    = "${module.init.ecs_instance_role}"
 
   ecs_cluster          = "${module.init.ecs_cluster}"
   service_discovery_ns = "${module.init.service_discovery_ns_id}"

@@ -103,6 +103,3 @@ workflows:
                 path: src/userservice
                 dockerfile: src/userservice/Dockerfile
                 repo: gstaad/userservice
-          env_var_updates: >-
-            container=userservice,name=COGNITO_USERPOOL_ID,value=${COGNITO_USERPOOL_ID}
-            ,container=userservice,name=COGNITO_CLIENT_ID,value=${COGNITO_CLIENT_ID}

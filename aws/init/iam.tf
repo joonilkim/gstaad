@@ -53,11 +53,12 @@ data "aws_iam_policy_document" "task" {
     actions   = [
       "cloudwatch:*",
       "events:*",
-      "logs:*",
       "ecr:GetAuthorizationToken",
       "ecr:BatchCheckLayerAvailability",
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
       "cognito-idp:*",
     ]
     resources = ["*"]

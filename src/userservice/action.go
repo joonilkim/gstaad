@@ -112,14 +112,9 @@ func (s *server) postCount(c context.Context) (cnt int32) {
 	c, cancel := context.WithTimeout(c, time.Millisecond*100)
 	defer cancel()
 
-	var header, trailer metadata.MD
-
 	// just a sample to show how to use compressor
 	// actually no need to compress for this
 	r, er := s.cc.postSvc.Count(c, &empty.Empty{}, grpc.UseCompressor(gzip.Name))
-	s.log.Infof("header %v", header)
-	s.log.Infof("trailer %v", trailer)
-
 	if er != nil {
 		s.log.Errorf("Fail to connect postservice: %v", er)
 	} else {

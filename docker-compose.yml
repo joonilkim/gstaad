@@ -19,6 +19,8 @@ services:
     build:
       context: src/postservice
       dockerfile: ../../tools/envoy/Dockerfile
+      args:
+        - UPSTREAM=postservice.gstaad
     ports:
       - 9200:80
       - 9201:8081
@@ -46,6 +48,8 @@ services:
     build:
       context: src/userservice
       dockerfile: ../../tools/envoy/Dockerfile
+      args:
+        - UPSTREAM=userservice.gstaad
     ports:
       - 9100:80
       - 9101:8081
